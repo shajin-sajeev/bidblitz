@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class AuctionController extends Controller
+{
+    public function create()
+    {
+        return view('auctions.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'sport' => 'required|string|max:50',
+            'min_players' => 'required|integer|min:1',
+            'max_players' => 'required|integer|min:1|gte:min_players',
+            'total_teams' => 'required|integer|min:2',
+            'budget' => 'required|numeric|min:0',
+        ]);
+
+        $auction = \App\Models\Auction::create([
+            'name' => $request->name,
+            'sport' => $request->sport,
+            'min_players' => $request->min_players,
+            'max_players' => $request->max_players,
+            'total_teams' => $request->total_teams,
+            'budget' => $request->budget,
+            'auction_pass' => strtoupper(\Illuminate\Support\Str::random(6)),
+            'status' => 'pending',
+            'created_by' => auth()->id(),
+        ]);
+
+        // Create the teams
+        for ($i = 1; $i <= $request->total_teams; $i++) {
+            \App\Models\Team::create([
+                'auction_id' => $auction->id,
+                'name' => "Team $i",
+                'team_pass' => strtoupper(\Illuminate\Support\Str::random(6)),
+            ]);
+        }
+
+        return redirect()->route('auctions.pool', $auction)->with('success', 'Auction created successfully! Now, add players to your auction pool.');
+    }
+}
