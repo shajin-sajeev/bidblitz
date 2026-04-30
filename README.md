@@ -1,0 +1,2 @@
+# bidblitz
+Bidding Application
