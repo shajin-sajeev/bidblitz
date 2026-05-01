@@ -182,6 +182,240 @@
     opacity: 0.9;
 }
 
+#pool-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1rem;
+    align-items: start;
+    padding-right: 0.5rem;
+}
+
+#pool-container .pagination-wrapper,
+#pool-container .text-center.py-8 {
+    grid-column: 1 / -1;
+}
+
+.pool-player-card {
+    background:
+        linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(17, 24, 39, 0.72)),
+        linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(99, 102, 241, 0.1));
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 16px;
+    padding: 1rem;
+    min-height: 168px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.pool-player-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-top: 3px solid rgba(45, 212, 191, 0.75);
+    pointer-events: none;
+}
+
+.pool-player-card::after {
+    content: '';
+    position: absolute;
+    right: -70px;
+    top: -70px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(45, 212, 191, 0.18), transparent 68%);
+    pointer-events: none;
+}
+
+.pool-player-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(45, 212, 191, 0.42);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(45, 212, 191, 0.08);
+}
+
+.pool-player-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    position: relative;
+    z-index: 1;
+}
+
+.pool-player-avatar {
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background:
+        linear-gradient(#111827, #111827) padding-box,
+        linear-gradient(135deg, #2dd4bf, #6366f1) border-box;
+    border: 2px solid transparent;
+    color: #f8fafc;
+    font-weight: 800;
+    letter-spacing: 0;
+    box-shadow: 0 12px 24px rgba(45, 212, 191, 0.14);
+}
+
+.pool-player-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pool-player-details {
+    min-width: 0;
+    flex: 1;
+}
+
+.pool-player-name-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.pool-player-name-row h4 {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 1.02rem;
+    line-height: 1.25;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.pool-player-username {
+    color: rgba(203, 213, 225, 0.72);
+    font-size: 0.82rem;
+    margin-top: 0.25rem;
+    overflow-wrap: anywhere;
+}
+
+.pool-player-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.65rem;
+}
+
+.pool-player-meta span {
+    color: rgba(226, 232, 240, 0.86);
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 999px;
+    padding: 0.28rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.pool-status-pill {
+    flex: 0 0 auto;
+    border-radius: 999px;
+    padding: 0.3rem 0.62rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    border: 1px solid transparent;
+}
+
+.status-pending {
+    background: rgba(245, 158, 11, 0.14);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.25);
+}
+
+.status-sold {
+    background: rgba(16, 185, 129, 0.14);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.status-unsold {
+    background: rgba(248, 113, 113, 0.14);
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.25);
+}
+
+.pool-player-actions {
+    display: flex;
+    align-items: stretch;
+    gap: 0.75rem;
+    position: relative;
+    z-index: 1;
+}
+
+.pool-price-panel {
+    flex: 1;
+    border-radius: 12px;
+    padding: 0.72rem 0.85rem;
+    background: rgba(2, 6, 23, 0.42);
+    border: 1px solid rgba(45, 212, 191, 0.18);
+}
+
+.pool-price-panel span {
+    display: block;
+    color: rgba(203, 213, 225, 0.7);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0;
+}
+
+.pool-price-panel strong {
+    display: block;
+    color: #5eead4;
+    font-size: 1.18rem;
+    line-height: 1.25;
+    margin-top: 0.18rem;
+}
+
+.remove-pool-player-btn {
+    border: 0;
+    border-radius: 12px;
+    padding: 0 0.95rem;
+    color: #fff;
+    background: linear-gradient(135deg, #f43f5e, #dc2626);
+    font-weight: 800;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    min-width: 86px;
+}
+
+.remove-pool-player-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(220, 38, 38, 0.28);
+}
+
+.remove-pool-player-btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+@media (max-width: 640px) {
+    #pool-container {
+        grid-template-columns: 1fr;
+    }
+
+    .pool-player-actions,
+    .pool-player-name-row {
+        flex-direction: column;
+    }
+
+    .remove-pool-player-btn {
+        min-height: 42px;
+    }
+}
+
 /* Tab styles */
 .tab-container {
     display: flex;
