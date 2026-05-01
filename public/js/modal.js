@@ -115,7 +115,9 @@ window.modalSystem = {
     },
 
     success: function(message, title = null, options = {}) {
-        this.show('success', message, title, options);
+        if (typeof options.actionCallback === 'function') {
+            options.actionCallback();
+        }
     },
 
     error: function(message, title = null, options = {}) {
@@ -126,13 +128,20 @@ window.modalSystem = {
         this.show('info', message, title, options);
     },
 
+    warning: function(message, title = null, options = {}) {
+        this.show('info', message, title || 'Warning', options);
+    },
+
     checkForModalOnLoad: function() {
         const urlParams = new URLSearchParams(window.location.search);
         const modalType = urlParams.get('modal');
         const message = urlParams.get('message');
 
         if (modalType && message) {
-            this.show(modalType, message);
+            const method = modalType === 'warning' ? 'warning' : modalType;
+            if (this[method]) {
+                this[method](message);
+            }
             urlParams.delete('modal');
             urlParams.delete('message');
             const query = urlParams.toString();
@@ -142,11 +151,25 @@ window.modalSystem = {
 };
 
 window.showAlert = function(type, message, title = null, options = {}) {
+    if (type === 'success') {
+        if (typeof options.actionCallback === 'function') {
+            options.actionCallback();
+        }
+        return;
+    }
+
     const method = window.modalSystem[type] ? type : 'info';
     window.modalSystem[method](message, title, options);
 };
 
 window.showNotification = function(message, type = 'info', title = null, actionCallback = null, actionText = 'Action') {
+    if (type === 'success') {
+        if (typeof actionCallback === 'function') {
+            actionCallback();
+        }
+        return;
+    }
+
     const method = window.modalSystem[type] ? type : 'info';
     const options = {
         html: /<\/?[a-z][\s\S]*>/i.test(String(message)),
@@ -160,9 +183,11 @@ window.alert = function(message) {
     const lowerMessage = String(message).toLowerCase();
 
     if (lowerMessage.includes('success') || lowerMessage.includes('created') || lowerMessage.includes('updated') || lowerMessage.includes('saved')) {
-        window.modalSystem.success(message);
+        return;
     } else if (lowerMessage.includes('error') || lowerMessage.includes('failed') || lowerMessage.includes('invalid')) {
         window.modalSystem.error(message);
+    } else if (lowerMessage.includes('warning') || lowerMessage.includes('notice')) {
+        window.modalSystem.warning(message);
     } else {
         window.modalSystem.info(message);
     }
@@ -190,11 +215,36 @@ document.addEventListener('click', function(e) {
     }
 });
 
+function isNumberInput(target) {
+    return target instanceof HTMLInputElement && target.type === 'number';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (isNumberInput(e.target) && (e.key === 'e' || e.key === 'E')) {
+        e.preventDefault();
+    }
+}, true);
+
+document.addEventListener('beforeinput', function(e) {
+    if (isNumberInput(e.target) && typeof e.data === 'string' && /e/i.test(e.data)) {
+        e.preventDefault();
+    }
+}, true);
+
+document.addEventListener('paste', function(e) {
+    if (!isNumberInput(e.target)) return;
+
+    const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+    if (/e/i.test(pastedText)) {
+        e.preventDefault();
+    }
+}, true);
+
 document.addEventListener('DOMContentLoaded', function() {
     window.modalSystem.checkForModalOnLoad();
 
     const flash = window.appFlashMessage;
-    if (flash && flash.message && window.modalSystem[flash.type]) {
+    if (flash && flash.type !== 'success' && flash.message && window.modalSystem[flash.type]) {
         window.modalSystem[flash.type](flash.message, flash.title || null, { html: Boolean(flash.html) });
     }
 });

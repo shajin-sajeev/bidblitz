@@ -630,24 +630,12 @@ function createAuction() {
         }
 
         if (validationType === 'exact_minimum_met') {
-            showNotification(
-                `Perfect! You have exactly the minimum required players (${currentPoolCount}). Proceeding with auction creation...`,
-                'success',
-                'Minimum Requirement Met',
-                () => proceedWithAuctionActivation(createButton, originalText),
-                'Create Auction'
-            );
+            proceedWithAuctionActivation(createButton, originalText);
             return;
         }
 
         if (validationType === 'maximum_met') {
-            showNotification(
-                `Excellent! You have reached maximum capacity (${currentPoolCount} players). Proceeding with auction creation...`,
-                'success',
-                'Maximum Capacity Reached',
-                () => proceedWithAuctionActivation(createButton, originalText),
-                'Create Auction'
-            );
+            proceedWithAuctionActivation(createButton, originalText);
             return;
         }
 
@@ -701,16 +689,7 @@ function proceedWithAuctionActivation(createButton, originalText) {
     })
     .then(data => {
         if (data.success) {
-            showNotification(
-                'Auction activated successfully! You will be redirected to the live auction page...', 
-                'success',
-                'Auction Created Successfully',
-                () => {
-                    // Redirect to the live auction page
-                    window.location.href = data.redirect_url || `{{ route('auctions.live', $auction) }}`;
-                },
-                'Go to Live Auction'
-            );
+            window.location.href = data.redirect_url || `{{ route('auctions.live', $auction) }}`;
         } else {
             showNotification(data.message || 'Error activating auction. Please try again.', 'error');
             // Restore button state
@@ -915,7 +894,7 @@ function buildAddedControls(playerId, basePrice, removeUrl) {
         <div class="flex gap-2 items-center">
             <input type="number" value="${basePrice}" class="price-input" disabled style="opacity: 0.5;">
             <button type="button" class="btn px-6 py-3 text-white font-semibold rounded-xl shadow-lg relative overflow-hidden" disabled style="background: linear-gradient(135deg, #10b981, #059669); opacity: 0.8;">
-                <span class="relative z-10">Added</span>
+                <span class="relative z-10">✓ Added</span>
             </button>
             <button type="button"
                     class="btn px-5 py-3 text-white font-semibold rounded-xl shadow-lg relative overflow-hidden"
@@ -999,7 +978,6 @@ function removePoolPlayer(button) {
         updatePoolCount(Number.isInteger(data.pool_count) ? data.pool_count : Math.max(currentCount - 1, 0));
         syncAvailablePlayerToRemoved(playerId, basePrice);
         showPoolEmptyStateIfNeeded();
-        showNotification(data.message || 'Player removed from pool.', 'success');
 
         setTimeout(() => {
             updateValidationStatus();
@@ -1074,8 +1052,6 @@ function handleFormSubmit(form) {
             poolContainer.insertAdjacentHTML('afterbegin', tempDiv.innerHTML);
             const currentCount = parseInt(document.getElementById('pool-count')?.textContent || '0', 10);
             updatePoolCount(Number.isInteger(data.pool_count) ? data.pool_count : currentCount + 1);
-            // Show success message
-            showNotification(data.message, 'success');
             const priceInput = form.querySelector('input[name="base_price"]');
             syncAvailablePlayerToAdded(data.player_id, priceInput.value, data.remove_url);
             // Refresh pagination links to include tab parameter

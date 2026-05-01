@@ -75,18 +75,18 @@
     @php
         $flashMessage = null;
 
-        if (session('success')) {
-            $flashMessage = [
-                'type' => 'success',
-                'title' => 'Success',
-                'message' => session('success'),
-                'html' => false,
-            ];
-        } elseif (session('error')) {
+        if (session('error')) {
             $flashMessage = [
                 'type' => 'error',
                 'title' => 'Error',
                 'message' => session('error'),
+                'html' => false,
+            ];
+        } elseif (session('warning')) {
+            $flashMessage = [
+                'type' => 'warning',
+                'title' => 'Warning',
+                'message' => session('warning'),
                 'html' => false,
             ];
         } elseif ($errors->any()) {
