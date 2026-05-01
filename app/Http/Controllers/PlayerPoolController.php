@@ -98,7 +98,10 @@ class PlayerPoolController extends Controller
                     'success' => true,
                     'message' => 'Player added to pool successfully.',
                     'pool_item_html' => $poolItemHtml,
-                    'pool_count' => \App\Models\AuctionPlayer::where('auction_id', $auction->id)->count()
+                    'pool_count' => \App\Models\AuctionPlayer::where('auction_id', $auction->id)->count(),
+                    'player_id' => $auctionPlayer->player_id,
+                    'pool_player_id' => $auctionPlayer->id,
+                    'remove_url' => route('auctions.pool.remove', [$auction, $auctionPlayer])
                 ]);
             } catch (\Exception $e) {
                 // Log the error for debugging
@@ -131,12 +134,67 @@ class PlayerPoolController extends Controller
                     'success' => true,
                     'message' => 'Player added to pool successfully.',
                     'pool_item_html' => $fallbackHtml,
-                    'pool_count' => \App\Models\AuctionPlayer::where('auction_id', $auction->id)->count()
+                    'pool_count' => \App\Models\AuctionPlayer::where('auction_id', $auction->id)->count(),
+                    'player_id' => $auctionPlayer->player_id,
+                    'pool_player_id' => $auctionPlayer->id,
+                    'remove_url' => route('auctions.pool.remove', [$auction, $auctionPlayer])
                 ]);
             }
         }
 
         return back()->with('success', 'Player added to the pool.');
+    }
+
+    public function remove(Request $request, \App\Models\Auction $auction, \App\Models\AuctionPlayer $poolPlayer)
+    {
+        if ($auction->created_by !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($poolPlayer->auction_id !== $auction->id) {
+            abort(404);
+        }
+
+        if (in_array($auction->status, ['active', 'live'], true)) {
+            $message = 'Players cannot be removed after the auction is active.';
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message
+                ], 422);
+            }
+
+            return back()->withErrors(['pool_player' => $message]);
+        }
+
+        if ($poolPlayer->team_id || in_array($poolPlayer->status, ['sold'], true)) {
+            $message = 'This player is already assigned and cannot be removed from the pool.';
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message
+                ], 422);
+            }
+
+            return back()->withErrors(['pool_player' => $message]);
+        }
+
+        $playerId = $poolPlayer->player_id;
+        $playerName = $poolPlayer->player->name ?? 'Player';
+        $poolPlayer->delete();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "{$playerName} removed from the pool.",
+                'player_id' => $playerId,
+                'pool_count' => \App\Models\AuctionPlayer::where('auction_id', $auction->id)->count()
+            ]);
+        }
+
+        return back()->with('success', "{$playerName} removed from the pool.");
     }
 
     public function search(\App\Models\Auction $auction, Request $request)

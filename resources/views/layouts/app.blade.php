@@ -7,6 +7,7 @@
     <title>Bid-Blitz - Realtime Player Auction</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/hide-number-arrows.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="{{ asset('js/theme.js') }}" defer></script>
     <script src="{{ asset('js/modal.js') }}" defer></script>
@@ -68,28 +69,44 @@
     </nav>
 
     <main class="container">
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <ul style="list-style: none; padding: 0;">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         @yield('content')
     </main>
 
+    @php
+        $flashMessage = null;
+
+        if (session('success')) {
+            $flashMessage = [
+                'type' => 'success',
+                'title' => 'Success',
+                'message' => session('success'),
+                'html' => false,
+            ];
+        } elseif (session('error')) {
+            $flashMessage = [
+                'type' => 'error',
+                'title' => 'Error',
+                'message' => session('error'),
+                'html' => false,
+            ];
+        } elseif ($errors->any()) {
+            $flashMessage = [
+                'type' => 'error',
+                'title' => 'Please fix these issues',
+                'message' => implode("\n", $errors->all()),
+                'html' => false,
+            ];
+        }
+    @endphp
+
+    @if($flashMessage)
+        <script>
+            window.appFlashMessage = @json($flashMessage);
+        </script>
+    @endif
+
     <!-- Modal System -->
     @include('partials.modal')
-</div>
 
 </body>
 </html>

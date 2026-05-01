@@ -7,12 +7,6 @@
         <a href="{{ route('settings.index') }}" class="btn btn-outline">← Back to Settings</a>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success" style="margin-bottom: 1.5rem;">
-            {{ session('success') }}
-        </div>
-    @endif
-
     <form action="{{ route('settings.theme.update') }}" method="POST" class="theme-form">
         @csrf
         

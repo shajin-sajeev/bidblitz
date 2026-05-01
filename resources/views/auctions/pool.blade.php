@@ -408,175 +408,6 @@
     }
 }
 
-/* Enhanced Modal Styles */
-#notificationModal {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-}
-
-#notificationModal.show {
-    display: flex !important;
-}
-
-#notificationModal.show #modalContent {
-    transform: scale(1) !important;
-    opacity: 1 !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-#notificationModal.hide {
-    display: none !important;
-}
-
-/* Modal Content Styling */
-#modalContent {
-    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.3);
-    position: relative;
-    overflow: hidden;
-}
-
-#modalContent::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent, rgba(118, 75, 162, 0.1));
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% {
-        left: -100%;
-    }
-    100% {
-        left: 100%;
-    }
-}
-
-/* Modal Header */
-#modalIcon {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
-}
-
-#modalTitle {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-fill-color: transparent;
-    margin-bottom: 0.5rem;
-    position: relative;
-}
-
-#modalTitle::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
-    border-radius: 1px;
-}
-
-/* Modal Message */
-#modalMessage {
-    color: #e2e8f0;
-    line-height: 1.6;
-    font-size: 1rem;
-}
-
-/* Modal Buttons */
-#notificationModal button {
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2);
-    position: relative;
-    overflow: hidden;
-}
-
-#notificationModal button::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-    transition: all 0.6s ease;
-    transform: translate(-50%, -50%);
-    z-index: 0;
-}
-
-#notificationModal button:hover::before {
-    width: 300%;
-    height: 300%;
-}
-
-#notificationModal button:active {
-    transform: scale(0.95);
-}
-
-#notificationModal button:first-of-type {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: 1px solid rgba(102, 126, 234, 0.3);
-}
-
-#notificationModal button:last-of-type {
-    background: rgba(75, 85, 99, 0.2);
-    color: #e2e8f0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-#notificationModal button:last-of-type:hover {
-    background: rgba(75, 85, 99, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-/* Enhanced Modal Animation */
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8) translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-@keyframes modalSlideOut {
-    from {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-    to {
-        opacity: 0;
-        transform: scale(0.8) translateY(-30px);
-    }
-}
-
-.modal-fade-in {
-    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.modal-fade-out {
-    animation: modalSlideOut 0.3s cubic-bezier(0.4, 0, 1, 1);
-}
 </style>
 <div class="glass-card mb-8">
     <div class="flex items-center justify-between">
@@ -613,7 +444,7 @@
 
         <div id="players-container" style="max-height: 600px; overflow-y: auto; padding-right: 0.5rem;">
             @forelse($players as $player)
-                <div class="player-card">
+                <div class="player-card" data-player-id="{{ $player->id }}">
                     <div class="flex items-start gap-4">
                         <div class="player-avatar">
                             @if($player->avatar)
@@ -642,6 +473,15 @@
                                     <input type="number" value="{{ $poolPlayer->base_price }}" class="price-input" disabled style="opacity: 0.5;">
                                     <button type="button" class="btn px-6 py-3 text-white font-semibold rounded-xl shadow-lg relative overflow-hidden" disabled style="background: linear-gradient(135deg, #10b981, #059669); opacity: 0.8;">
                                         <span class="relative z-10">✓ Added</span>
+                                    </button>
+                                    <button type="button"
+                                            class="btn px-5 py-3 text-white font-semibold rounded-xl shadow-lg relative overflow-hidden"
+                                            style="background: linear-gradient(135deg, #ef4444, #dc2626);"
+                                            data-remove-url="{{ route('auctions.pool.remove', [$auction, $poolPlayer]) }}"
+                                            data-player-id="{{ $player->id }}"
+                                            data-base-price="{{ $poolPlayer->base_price }}"
+                                            onclick="removePoolPlayer(this)">
+                                        Remove
                                     </button>
                                 </div>
                             @else
@@ -696,30 +536,7 @@
         
         <div id="pool-container" style="max-height: 500px; overflow-y: auto; margin-top: 1rem;">
             @forelse($pool as $item)
-                <div class="player-card" style="padding: 1rem;">
-                    <div class="flex items-center gap-3">
-                        <div class="player-avatar" style="width: 40px; height: 40px; font-size: 0.9rem;">
-                            @if($item->player->avatar)
-                                <img src="{{ $item->player->avatar }}" alt="{{ $item->player->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                            @else
-                                {{ substr($item->player->name ?? $item->player->unique_username, 0, 2) }}
-                            @endif
-                        </div>
-                        
-                        <div class="flex-1">
-                            <div class="font-semibold">{{ $item->player->name }}</div>
-                            <div class="text-sm text-gray-400">{{ $item->player->unique_username }}</div>
-                            <div class="text-sm text-blue-400">{{ $item->player->specialization }}</div>
-                        </div>
-                        
-                        <div class="text-right">
-                            <div class="text-green-400 font-bold text-lg">₹{{ number_format($item->base_price) }}</div>
-                            <div class="text-xs px-2 py-1 rounded-full inline-block mt-1 {{ $item->status === 'available' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400' }}">
-                                {{ ucfirst($item->status) }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @include('partials.pool-item', ['item' => $item])
             @empty
                 <div class="text-center py-8">
                     <div class="text-gray-400 text-lg">👥 No players added to the pool yet.</div>
@@ -747,7 +564,15 @@ function createAuction() {
     const originalText = createButton.innerHTML;
     createButton.disabled = true;
     createButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Validating...';
-    
+
+    // Handler to reset button when any modal is closed
+    function resetCreateButtonOnModalClose() {
+        createButton.disabled = false;
+        createButton.innerHTML = originalText;
+        document.removeEventListener('modalClosed', resetCreateButtonOnModalClose);
+    }
+    document.addEventListener('modalClosed', resetCreateButtonOnModalClose);
+
     // Get current pool count via AJAX for real-time validation
     fetch(`{{ route('auctions.pool.validate', $auction) }}`, {
         method: 'GET',
@@ -765,47 +590,48 @@ function createAuction() {
     })
     .then(data => {
         console.log('Validation response:', data);
-        
+
         const { minRequired, maxAllowed, currentPoolCount, canCreate, validationType } = data;
-        
+
         // Restore button state for validation errors
         if (!canCreate) {
             createButton.disabled = false;
             createButton.innerHTML = originalText;
+            document.removeEventListener('modalClosed', resetCreateButtonOnModalClose);
         }
-        
+
         // Handle different validation scenarios
         if (validationType === 'minimum_not_met') {
             const needed = minRequired - currentPoolCount;
             showNotification(
-                `⚠️ Minimum players not met! You need ${minRequired} players but only have ${currentPoolCount}. Add ${needed} more player${needed > 1 ? 's' : ''} to create the auction.`, 
+                `⚠️ Minimum players not met! You need ${minRequired} players but only have ${currentPoolCount}. Add ${needed} more player${needed > 1 ? 's' : ''} to create the auction.`,
                 'error'
             );
             return;
         }
-        
+
         if (validationType === 'minimum_met_but_not_maximum') {
             const neededToReachMax = maxAllowed - currentPoolCount;
             const excessOverMin = currentPoolCount - minRequired;
             showNotification(
-                `❌ Auction creation requires exactly ${minRequired} or ${maxAllowed} players. You have ${currentPoolCount}. Add ${neededToReachMax} more player${neededToReachMax > 1 ? 's' : ''} to reach maximum, or remove ${excessOverMin} player${excessOverMin > 1 ? 's' : ''} to reach minimum.`, 
+                `❌ Auction creation requires exactly ${minRequired} or ${maxAllowed} players. You have ${currentPoolCount}. Add ${neededToReachMax} more player${neededToReachMax > 1 ? 's' : ''} to reach maximum, or remove ${excessOverMin} player${excessOverMin > 1 ? 's' : ''} to reach minimum.`,
                 'error'
             );
             return;
         }
-        
+
         if (validationType === 'maximum_exceeded') {
             const excess = currentPoolCount - maxAllowed;
             showNotification(
-                `❌ Maximum players exceeded! You can only have ${maxAllowed} players but have ${currentPoolCount}. Remove ${excess} player${excess > 1 ? 's' : ''} to create the auction.`, 
+                `❌ Maximum players exceeded! You can only have ${maxAllowed} players but have ${currentPoolCount}. Remove ${excess} player${excess > 1 ? 's' : ''} to create the auction.`,
                 'error'
             );
             return;
         }
-        
+
         if (validationType === 'exact_minimum_met') {
             showNotification(
-                `Perfect! You have exactly the minimum required players (${currentPoolCount}). Proceeding with auction creation...`, 
+                `Perfect! You have exactly the minimum required players (${currentPoolCount}). Proceeding with auction creation...`,
                 'success',
                 'Minimum Requirement Met',
                 () => proceedWithAuctionActivation(createButton, originalText),
@@ -813,10 +639,10 @@ function createAuction() {
             );
             return;
         }
-        
+
         if (validationType === 'maximum_met') {
             showNotification(
-                `Excellent! You have reached maximum capacity (${currentPoolCount} players). Proceeding with auction creation...`, 
+                `Excellent! You have reached maximum capacity (${currentPoolCount} players). Proceeding with auction creation...`,
                 'success',
                 'Maximum Capacity Reached',
                 () => proceedWithAuctionActivation(createButton, originalText),
@@ -824,14 +650,14 @@ function createAuction() {
             );
             return;
         }
-        
+
         // Default case - proceed with confirmation modal
         const confirmMessage = `Are you ready to create the auction?<br><br>
             <strong>Pool:</strong> {{ $auction->name }}<br>
             <strong>Players:</strong> ${currentPoolCount}<br>
             <strong>Teams:</strong> {{ $auction->total_teams }}<br><br>
             Once created, the auction will be live for team managers to join.`;
-        
+
         showNotification(
             confirmMessage,
             'info',
@@ -846,6 +672,7 @@ function createAuction() {
         // Restore button state
         createButton.disabled = false;
         createButton.innerHTML = originalText;
+        document.removeEventListener('modalClosed', resetCreateButtonOnModalClose);
     });
 }
 
@@ -1056,6 +883,136 @@ function performSearch(query) {
         });
 }
 
+function updatePoolCount(count) {
+    const poolTabButton = document.querySelector('.tab-button:last-child');
+    const poolCountElement = document.getElementById('pool-count');
+
+    if (poolTabButton) {
+        poolTabButton.innerHTML = `<i class="fas fa-list mr-2"></i>Current Pool (${count})`;
+    }
+
+    if (poolCountElement) {
+        poolCountElement.textContent = count;
+    }
+}
+
+function buildAddToPoolForm(playerId, basePrice = '') {
+    return `
+        <form action="{{ route('auctions.pool.store', $auction) }}" method="POST" class="flex gap-2 pool-form" onsubmit="event.preventDefault(); handleFormSubmit(this); return false;">
+            @csrf
+            <input type="hidden" name="player_id" value="${playerId}">
+            <input type="number" name="base_price" class="price-input" placeholder="Base Price" required min="1" value="${basePrice || ''}">
+            <button type="submit" class="btn btn-accent px-6 py-3 text-white font-semibold rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden group" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                <span class="relative z-10">Add to Pool</span>
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-all duration-700"></div>
+            </button>
+        </form>
+    `;
+}
+
+function buildAddedControls(playerId, basePrice, removeUrl) {
+    return `
+        <div class="flex gap-2 items-center">
+            <input type="number" value="${basePrice}" class="price-input" disabled style="opacity: 0.5;">
+            <button type="button" class="btn px-6 py-3 text-white font-semibold rounded-xl shadow-lg relative overflow-hidden" disabled style="background: linear-gradient(135deg, #10b981, #059669); opacity: 0.8;">
+                <span class="relative z-10">Added</span>
+            </button>
+            <button type="button"
+                    class="btn px-5 py-3 text-white font-semibold rounded-xl shadow-lg relative overflow-hidden"
+                    style="background: linear-gradient(135deg, #ef4444, #dc2626);"
+                    data-remove-url="${removeUrl}"
+                    data-player-id="${playerId}"
+                    data-base-price="${basePrice}"
+                    onclick="removePoolPlayer(this)">
+                Remove
+            </button>
+        </div>
+    `;
+}
+
+function syncAvailablePlayerToAdded(playerId, basePrice, removeUrl) {
+    const playerCard = document.querySelector(`#players-container .player-card[data-player-id="${playerId}"]`);
+    const controls = playerCard ? playerCard.querySelector('.price-input-group') : null;
+
+    if (!controls) return;
+
+    controls.innerHTML = buildAddedControls(playerId, basePrice, removeUrl);
+    playerCard.style.opacity = '0.8';
+    playerCard.style.border = '1px solid rgba(16, 185, 129, 0.2)';
+}
+
+function syncAvailablePlayerToRemoved(playerId, basePrice = '') {
+    const playerCard = document.querySelector(`#players-container .player-card[data-player-id="${playerId}"]`);
+    const controls = playerCard ? playerCard.querySelector('.price-input-group') : null;
+
+    if (!controls) return;
+
+    controls.innerHTML = buildAddToPoolForm(playerId, basePrice);
+    playerCard.style.opacity = '';
+    playerCard.style.border = '';
+}
+
+function showPoolEmptyStateIfNeeded() {
+    const poolContainer = document.getElementById('pool-container');
+    if (!poolContainer || poolContainer.querySelector('.pool-player-card')) return;
+
+    poolContainer.insertAdjacentHTML('afterbegin', `
+        <div class="text-center py-8">
+            <div class="text-gray-400 text-lg">No players added to the pool yet.</div>
+            <div class="text-gray-500 text-sm mt-2">Start adding players from the available list</div>
+        </div>
+    `);
+}
+
+function removePoolPlayer(button) {
+    const removeUrl = button.dataset.removeUrl;
+    const playerId = button.dataset.playerId;
+    const basePrice = button.dataset.basePrice || '';
+    const originalText = button.innerHTML;
+
+    button.disabled = true;
+    button.innerHTML = 'Removing...';
+
+    fetch(removeUrl, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(async response => {
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            data = {};
+        }
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Error removing player from pool');
+        }
+
+        document.querySelectorAll(`.pool-player-card[data-player-id="${playerId}"]`).forEach(card => card.remove());
+
+        const currentCount = parseInt(document.getElementById('pool-count')?.textContent || '0', 10);
+        updatePoolCount(Number.isInteger(data.pool_count) ? data.pool_count : Math.max(currentCount - 1, 0));
+        syncAvailablePlayerToRemoved(playerId, basePrice);
+        showPoolEmptyStateIfNeeded();
+        showNotification(data.message || 'Player removed from pool.', 'success');
+
+        setTimeout(() => {
+            updateValidationStatus();
+        }, 200);
+    })
+    .catch(error => {
+        console.error('Remove error:', error);
+        showNotification(error.message || 'Error removing player from pool', 'error');
+        button.disabled = false;
+        button.innerHTML = originalText;
+    });
+}
+
 searchInput.addEventListener('keyup', function(e) {
     clearTimeout(searchTimeout);
     const query = e.target.value.trim();
@@ -1097,70 +1054,50 @@ function handleFormSubmit(form) {
             'Accept': 'application/json'
         }
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+    .then(async response => {
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            data = {};
         }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
+        if (response.ok && data.success) {
             // Add the new item to the pool
             const poolContainer = document.getElementById('pool-container');
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = data.pool_item_html;
-            
             // Remove empty state message if it exists
             const emptyState = poolContainer.querySelector('.text-center.py-8');
             if (emptyState) {
                 emptyState.remove();
             }
-            
             poolContainer.insertAdjacentHTML('afterbegin', tempDiv.innerHTML);
-            
-            // Update pool count in tab button
-            const poolTabButton = document.querySelector('.tab-button:last-child');
-            const currentCount = parseInt(poolTabButton.textContent.match(/\d+/)[0]) || 0;
-            const newCount = currentCount + 1;
-            poolTabButton.innerHTML = `<i class="fas fa-list mr-2"></i>Current Pool (${newCount})`;
-            
-            // Update pool count in stats
-            const poolCountElement = document.getElementById('pool-count');
-            if (poolCountElement) {
-                const currentStatCount = parseInt(poolCountElement.textContent) || 0;
-                poolCountElement.textContent = currentStatCount + 1;
-            }
-            
+            const currentCount = parseInt(document.getElementById('pool-count')?.textContent || '0', 10);
+            updatePoolCount(Number.isInteger(data.pool_count) ? data.pool_count : currentCount + 1);
             // Show success message
             showNotification(data.message, 'success');
-            
-            // Mark the button as added and disable it
-            const playerCard = form.closest('.player-card');
-            submitButton.disabled = true;
-            submitButton.innerHTML = '<span class="relative z-10">✓ Added</span>';
-            submitButton.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            
-            // Disable the input field
             const priceInput = form.querySelector('input[name="base_price"]');
-            priceInput.disabled = true;
-            priceInput.style.opacity = '0.5';
-            
-            // Update the player card style to show it's added
-            playerCard.style.opacity = '0.8';
-            playerCard.style.border = '1px solid rgba(16, 185, 129, 0.2)';
-            
+            syncAvailablePlayerToAdded(data.player_id, priceInput.value, data.remove_url);
             // Refresh pagination links to include tab parameter
             setTimeout(() => {
                 addTabParameterToPaginationLinks();
             }, 100);
-            
             // Update validation status after adding player
             setTimeout(() => {
                 updateValidationStatus();
             }, 200);
-            
         } else {
-            showNotification(data.message || 'Error adding player to pool', 'error');
+            // Show error from server if available (e.g., max limit)
+            let errorMsg = data.message || 'Error adding player to pool';
+            // If 422, try to parse error from response
+            if (!response.ok && response.status === 422 && response.headers.get('content-type')?.includes('application/json')) {
+                if (data.message) {
+                    errorMsg = data.message;
+                } else if (data.errors) {
+                    errorMsg = Object.values(data.errors).flat().join(' ');
+                }
+            }
+            showNotification(errorMsg, 'error');
             // Restore button state
             submitButton.disabled = false;
             submitButton.innerHTML = originalButtonText;
@@ -1175,120 +1112,6 @@ function handleFormSubmit(form) {
     });
     
     return false;
-}
-
-// Modal-based Notification System
-let modalActionCallback = null;
-
-function showNotificationModal(title, message, type = 'info', actionCallback = null, actionText = 'Action') {
-    const modal = document.getElementById('notificationModal');
-    const modalIcon = document.getElementById('modalIcon');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalMessage = document.getElementById('modalMessage');
-    const modalActionBtn = document.getElementById('modalActionBtn');
-    const modalContent = document.getElementById('modalContent');
-    
-    // Set icon and colors based on type
-    let icon, iconColor, titleColor;
-    switch (type) {
-        case 'success':
-            icon = '✅';
-            iconColor = 'text-green-500';
-            titleColor = 'text-green-400';
-            break;
-        case 'error':
-            icon = '❌';
-            iconColor = 'text-red-500';
-            titleColor = 'text-red-400';
-            break;
-        case 'warning':
-            icon = '⚠️';
-            iconColor = 'text-yellow-500';
-            titleColor = 'text-yellow-400';
-            break;
-        case 'info':
-        default:
-            icon = 'ℹ️';
-            iconColor = 'text-blue-500';
-            titleColor = 'text-blue-400';
-            break;
-    }
-    
-    // Set modal content
-    modalIcon.innerHTML = icon;
-    modalIcon.className = `text-3xl mr-3 ${iconColor}`;
-    modalTitle.innerHTML = title;
-    modalTitle.className = `text-xl font-bold ${titleColor}`;
-    modalMessage.innerHTML = message;
-    
-    // Handle action button
-    if (actionCallback) {
-        const modalActionText = document.getElementById('modalActionText');
-        if (modalActionText) {
-            modalActionText.innerHTML = actionText;
-        }
-        modalActionBtn.classList.remove('hidden');
-        modalActionCallback = actionCallback;
-    } else {
-        modalActionBtn.classList.add('hidden');
-        modalActionCallback = null;
-    }
-    
-    // Show modal with animation
-    modal.classList.remove('hide');
-    modal.classList.add('show');
-    modalContent.classList.add('modal-fade-in');
-    
-    // Remove animation class after animation completes
-    setTimeout(() => {
-        modalContent.classList.remove('modal-fade-in');
-    }, 300);
-}
-
-function closeNotificationModal() {
-    const modal = document.getElementById('notificationModal');
-    const modalContent = document.getElementById('modalContent');
-    
-    // Add fade out animation
-    modalContent.classList.add('modal-fade-out');
-    
-    setTimeout(() => {
-        modal.classList.remove('show');
-        modal.classList.add('hide');
-        modalContent.classList.remove('modal-fade-out');
-        modalActionCallback = null;
-    }, 300);
-}
-
-function handleModalAction() {
-    if (modalActionCallback) {
-        modalActionCallback();
-    }
-    closeNotificationModal();
-}
-
-// Enhanced Notification function (now uses modal)
-function showNotification(message, type = 'info', title = null, actionCallback = null, actionText = 'Action') {
-    // Set default title based on type if not provided
-    if (!title) {
-        switch (type) {
-            case 'success':
-                title = 'Success';
-                break;
-            case 'error':
-                title = 'Error';
-                break;
-            case 'warning':
-                title = 'Warning';
-                break;
-            case 'info':
-            default:
-                title = 'Information';
-                break;
-        }
-    }
-    
-    showNotificationModal(title, message, type, actionCallback, actionText);
 }
 
 // Add event listeners for pool forms
@@ -1335,56 +1158,5 @@ window.addEventListener('load', function() {
     }, 100);
 });
 
-// Keyboard support for modal
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const modal = document.getElementById('notificationModal');
-        if (modal.classList.contains('show')) {
-            closeNotificationModal();
-        }
-    }
-});
 </script>
-<!-- Small Notification Modal -->
-<div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 backdrop-blur-sm">
-    <div class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-lg p-0 max-w-xs w-full mx-4 transform transition-all duration-500 scale-95 opacity-0 shadow-lg border border-gray-700" id="modalContent">
-        <!-- Modal Header -->
-        <div class="flex items-center justify-between p-3 border-b border-gray-700">
-            <div class="flex items-center">
-                <div id="modalIcon" class="text-lg mr-2"></div>
-                <h3 id="modalTitle" class="text-base font-bold text-white"></h3>
-            </div>
-            <button onclick="closeNotificationModal()" class="text-gray-400 hover:text-white transition-colors duration-200 p-1 rounded hover:bg-gray-700">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 20 20">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6L6 6"/>
-                </svg>
-            </button>
-        </div>
-        
-        <!-- Modal Body -->
-        <div class="p-3">
-            <p id="modalMessage" class="text-gray-300 text-center text-xs"></p>
-        </div>
-        
-        <!-- Modal Footer -->
-        <div class="flex justify-end gap-2 p-3 border-t border-gray-700">
-            <button onclick="closeNotificationModal()" class="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-all duration-200 transform hover:scale-105 text-xs shadow">
-                <span class="flex items-center">
-                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 20 20">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6L9 9l1 1 1 1 1"/>
-                    </svg>
-                    Cancel
-                </span>
-            </button>
-            <button id="modalActionBtn" onclick="handleModalAction()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-md transition-all duration-200 transform hover:scale-105 text-xs shadow min-w-[80px] hidden">
-                <span class="flex items-center">
-                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 20 20">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 2-2 2"/>
-                    </svg>
-                    <span id="modalActionText">Action</span>
-                </span>
-            </button>
-        </div>
-    </div>
-</div>
 @endsection

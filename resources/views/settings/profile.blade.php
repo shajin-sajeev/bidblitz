@@ -7,12 +7,6 @@
         <a href="{{ route('settings.index') }}" class="btn btn-outline">← Back to Settings</a>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success" style="margin-bottom: 1.5rem;">
-            {{ session('success') }}
-        </div>
-    @endif
-
     <!-- Current Profile Photo -->
     <div style="text-align: center; margin-bottom: 2rem;">
         <div style="position: relative; display: inline-block;">

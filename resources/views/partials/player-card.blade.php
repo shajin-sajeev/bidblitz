@@ -1,4 +1,4 @@
-<div class="player-card">
+<div class="player-card" data-player-id="{{ $player->id }}">
     <div class="flex items-start gap-4">
         <div class="player-avatar">
             @if($player->avatar)
@@ -27,6 +27,15 @@
                     <input type="number" value="{{ $poolPlayer->base_price }}" class="price-input" disabled style="opacity: 0.5;">
                     <button type="button" class="btn px-6 py-3 text-white font-semibold rounded-xl shadow-lg relative overflow-hidden" disabled style="background: linear-gradient(135deg, #10b981, #059669); opacity: 0.8;">
                         <span class="relative z-10">✓ Added</span>
+                    </button>
+                    <button type="button"
+                            class="btn px-5 py-3 text-white font-semibold rounded-xl shadow-lg relative overflow-hidden"
+                            style="background: linear-gradient(135deg, #ef4444, #dc2626);"
+                            data-remove-url="{{ route('auctions.pool.remove', [$auction, $poolPlayer]) }}"
+                            data-player-id="{{ $player->id }}"
+                            data-base-price="{{ $poolPlayer->base_price }}"
+                            onclick="removePoolPlayer(this)">
+                        Remove
                     </button>
                 </div>
             @else
