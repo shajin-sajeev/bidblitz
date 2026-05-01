@@ -38,6 +38,20 @@ class AuthController extends Controller
         $user->otp_expires_at = now()->addMinutes(10);
         $user->save();
 
+        // Create corresponding player entry with the same username
+        \App\Models\Player::create([
+            'name' => $user->name,
+            'unique_username' => $user->username,
+            'email' => $user->username . '@player.com', // Generate a placeholder email
+            'phone' => $user->phone,
+            'specialization' => 'All-rounder', // Default specialization
+            'experience_years' => 0, // Default experience
+            'base_price' => 1000.00, // Default base price
+            'description' => 'Player profile created during registration',
+            'avatar' => 'https://picsum.photos/seed/' . $user->username . '/400/400.jpg',
+            'is_active' => true,
+        ]);
+
         session(['auth_phone' => $user->phone, 'registration_mode' => true]);
 
         return redirect()->route('auth.verify.show')->with('success', 'Registration successful! OTP sent for verification. (Mock: 123456)');

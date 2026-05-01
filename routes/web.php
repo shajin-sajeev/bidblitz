@@ -73,6 +73,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/auctions/{auction}/pool', [\App\Http\Controllers\PlayerPoolController::class, 'store'])->name('auctions.pool.store');
         Route::delete('/auctions/{auction}/pool/{poolPlayer}', [\App\Http\Controllers\PlayerPoolController::class, 'remove'])->name('auctions.pool.remove');
         Route::get('/auctions/{auction}/pool/search', [\App\Http\Controllers\PlayerPoolController::class, 'search'])->name('auctions.pool.search');
+        Route::get('/auctions/{auction}/pool/validate', [\App\Http\Controllers\PlayerPoolController::class, 'validatePool'])->name('auctions.pool.validate');
+        
+        // Auction Activation
+        Route::post('/auctions/{auction}/activate', [\App\Http\Controllers\PlayerPoolController::class, 'activateAuction'])->name('auctions.activate');
 
         // Live Auction
         Route::get('/auctions/{auction}/live', [\App\Http\Controllers\LiveAuctionController::class, 'index'])->name('auctions.live');

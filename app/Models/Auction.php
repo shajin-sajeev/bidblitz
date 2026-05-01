@@ -8,7 +8,7 @@ class Auction extends Model
 {
     protected $fillable = [
         'name', 'sport', 'min_players', 'max_players', 
-        'total_teams', 'budget', 'auction_pass', 'status', 'created_by'
+        'total_teams', 'budget', 'auction_pass', 'status', 'created_by', 'activated_at'
     ];
 
     public function creator() {
