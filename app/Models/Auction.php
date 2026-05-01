@@ -34,4 +34,8 @@ class Auction extends Model
     public function players() {
         return $this->hasManyThrough(AuctionPlayer::class, Team::class);
     }
+
+    public function auctionPlayers() {
+        return $this->hasMany(AuctionPlayer::class);
+    }
 }

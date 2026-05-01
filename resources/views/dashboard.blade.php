@@ -138,8 +138,14 @@
                                     <div style="display: flex; gap: 0.5rem;">
                                         @if($auction->created_by === auth()->id())
                                             <a href="{{ route('auctions.pool', $auction) }}" class="btn" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Manage</a>
+                                            @if($auction->status === 'active')
+                                                <form method="POST" action="{{ route('auctions.start', $auction) }}" style="display: inline;">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Start Auction</button>
+                                                </form>
+                                            @endif
                                         @endif
-                                        <a href="{{ route('auctions.live', $auction) }}" class="btn btn-accent" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">View</a>
+                                        <a href="{{ route('auctions.live', $auction) }}" class="btn btn-accent" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">{{ $auction->status === 'live' ? 'Live' : 'View' }}</a>
                                     </div>
                                 </td>
                             </tr>

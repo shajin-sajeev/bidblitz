@@ -81,6 +81,8 @@ Route::middleware('auth')->group(function () {
         // Live Auction
         Route::get('/auctions/{auction}/live', [\App\Http\Controllers\LiveAuctionController::class, 'index'])->name('auctions.live');
         Route::post('/auctions/{auction}/start', [\App\Http\Controllers\LiveAuctionController::class, 'start'])->name('auctions.start');
+        Route::post('/auctions/{auction}/live/teams', [\App\Http\Controllers\LiveAuctionController::class, 'saveTeams'])->name('auctions.live.teams.save');
+        Route::post('/auctions/{auction}/live/assign', [\App\Http\Controllers\LiveAuctionController::class, 'assignPlayer'])->name('auctions.live.assign');
         Route::post('/auctions/{auction}/spin', [\App\Http\Controllers\LiveAuctionController::class, 'spin'])->name('auctions.spin');
         Route::post('/auctions/{auction}/bid', [\App\Http\Controllers\LiveAuctionController::class, 'bid'])->name('auctions.bid');
         Route::post('/auctions/{auction}/sell', [\App\Http\Controllers\LiveAuctionController::class, 'sell'])->name('auctions.sell');

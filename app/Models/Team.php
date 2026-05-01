@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Team extends Model
 {
     protected $fillable = [
-        'auction_id', 'name', 'logo', 'team_pass', 'owner_id'
+        'auction_id', 'name', 'logo', 'team_pass', 'owner_id', 'owner_player_id'
     ];
 
     public function auction() {
@@ -16,6 +16,10 @@ class Team extends Model
 
     public function owner() {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function ownerPlayer() {
+        return $this->belongsTo(Player::class, 'owner_player_id');
     }
 
     public function teamOwners() {
