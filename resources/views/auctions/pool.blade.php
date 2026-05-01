@@ -3,8 +3,8 @@
 @section('content')
 <style>
 .player-card {
-    background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
-    border: 1px solid rgba(255,255,255,0.15);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 92%, #ffffff 8%), color-mix(in srgb, var(--card-bg) 96%, transparent));
+    border: 1px solid var(--border-color);
     border-radius: 20px;
     padding: 1.5rem;
     margin-bottom: 1.25rem;
@@ -33,7 +33,7 @@
     right: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, color-mix(in srgb, var(--primary) 16%, transparent) 0%, transparent 70%);
     opacity: 0;
     transition: opacity 0.3s ease;
     pointer-events: none;
@@ -84,12 +84,8 @@
 .player-name {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--text-main);
     margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
 }
 
 .player-role {
@@ -134,8 +130,8 @@
     padding: 0.75rem 1rem;
     border: 2px solid rgba(102, 126, 234, 0.2);
     border-radius: 12px;
-    background: rgba(255,255,255,0.08);
-    color: var(--text-primary);
+    background: var(--form-bg);
+    color: var(--text-main);
     font-weight: 600;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
@@ -150,12 +146,12 @@
 }
 
 .price-input::placeholder {
-    color: rgba(255,255,255,0.5);
+    color: var(--text-muted);
 }
 
 .pool-header {
     background: linear-gradient(135deg, var(--primary), var(--accent));
-    color: white;
+    color: #111827;
     padding: 1rem;
     border-radius: 12px;
     margin-bottom: 1rem;
@@ -401,6 +397,90 @@
     cursor: wait;
 }
 
+body.light-theme .player-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
+    border-color: rgba(15, 23, 42, 0.12);
+}
+
+body.light-theme .player-username,
+body.light-theme .player-specialization,
+body.light-theme .player-experience,
+body.light-theme .player-base-price,
+body.light-theme .glass-card .text-gray-400,
+body.light-theme .glass-card .text-gray-500,
+body.light-theme #available-tab .text-gray-400,
+body.light-theme #available-tab .text-gray-500,
+body.light-theme #pool-tab .text-gray-400,
+body.light-theme #pool-tab .text-gray-500 {
+    color: #475569 !important;
+}
+
+body.light-theme .pool-player-card {
+    background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.95)),
+        linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(79, 70, 229, 0.06));
+    border-color: rgba(15, 23, 42, 0.12);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+}
+
+body.light-theme .pool-player-card:hover {
+    border-color: rgba(13, 148, 136, 0.34);
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(13, 148, 136, 0.08);
+}
+
+body.light-theme .pool-player-name-row h4 {
+    color: #0f172a;
+}
+
+body.light-theme .pool-player-username {
+    color: #475569;
+}
+
+body.light-theme .pool-player-meta span {
+    color: #334155;
+    background: rgba(241, 245, 249, 0.92);
+    border-color: rgba(15, 23, 42, 0.12);
+}
+
+body.light-theme .pool-price-panel {
+    background: rgba(248, 250, 252, 0.92);
+    border-color: rgba(13, 148, 136, 0.2);
+}
+
+body.light-theme .pool-price-panel span {
+    color: #64748b;
+}
+
+body.light-theme .pool-price-panel strong {
+    color: #0f766e;
+}
+
+body.light-theme .pool-player-avatar {
+    background:
+        linear-gradient(#ffffff, #ffffff) padding-box,
+        linear-gradient(135deg, #0d9488, #4f46e5) border-box;
+    color: #0f172a;
+}
+
+body.light-theme .tab-button {
+    color: #475569;
+}
+
+body.light-theme .tab-button:hover {
+    color: #0f172a;
+    background: rgba(251, 191, 36, 0.16);
+}
+
+body.light-theme .tab-button.active {
+    color: #111827;
+    box-shadow: 0 8px 20px rgba(251, 191, 36, 0.22);
+}
+
+body.light-theme .pagination-items {
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
 @media (max-width: 640px) {
     #pool-container {
         grid-template-columns: 1fr;
@@ -421,14 +501,14 @@
     display: flex;
     gap: 0.5rem;
     margin-bottom: 1.5rem;
-    border-bottom: 2px solid rgba(255,255,255,0.1);
+    border-bottom: 2px solid var(--border-color);
 }
 
 .tab-button {
     padding: 0.75rem 1.5rem;
     background: transparent;
     border: none;
-    color: rgba(255,255,255,0.7);
+    color: var(--text-muted);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -437,13 +517,13 @@
 }
 
 .tab-button:hover {
-    color: rgba(255,255,255,0.9);
-    background: rgba(255,255,255,0.05);
+    color: var(--text-main);
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .tab-button.active {
-    color: white;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #111827;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
 }
 
 .tab-button.active::after {
@@ -474,10 +554,10 @@
 .pagination-wrapper {
     margin-top: 3rem;
     padding: 2rem 0;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+    background: color-mix(in srgb, var(--card-bg) 92%, var(--primary) 8%);
     border-radius: 20px;
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
 }
 
 .pagination {
@@ -494,7 +574,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem;
-    background: rgba(0, 0, 0, 0.2);
+    background: color-mix(in srgb, var(--card-bg) 90%, #000000 10%);
     border-radius: 100px;
     backdrop-filter: blur(10px);
 }
@@ -515,7 +595,7 @@
     background: transparent;
     border: 2px solid transparent;
     border-radius: 50px;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-muted);
     text-decoration: none;
     font-weight: 500;
     font-size: 0.95rem;
@@ -544,7 +624,7 @@
 .pagination .page-item.disabled .page-link {
     background: transparent;
     border-color: transparent;
-    color: rgba(255, 255, 255, 0.2);
+    color: color-mix(in srgb, var(--text-muted) 50%, transparent);
     cursor: not-allowed;
     transform: none;
     opacity: 0.5;
@@ -593,7 +673,7 @@
 .pagination-info {
     text-align: center;
     margin-bottom: 1.5rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-muted);
     font-size: 0.9rem;
     font-weight: 500;
     display: flex;
