@@ -27,22 +27,22 @@
             
             <div class="form-group">
                 <label for="min_players" class="form-label">Min Players per Team</label>
-                <input type="number" name="min_players" id="min_players" class="form-control" value="11" required min="1">
+                <input type="number" name="min_players" id="min_players" class="form-control" value="" required min="1">
             </div>
             
             <div class="form-group">
                 <label for="max_players" class="form-label">Max Players per Team</label>
-                <input type="number" name="max_players" id="max_players" class="form-control" value="15" required min="1">
+                <input type="number" name="max_players" id="max_players" class="form-control" value="" required min="1">
             </div>
             
             <div class="form-group">
                 <label for="total_teams" class="form-label">Total Number of Teams</label>
-                <input type="number" name="total_teams" id="total_teams" class="form-control" value="8" required min="2">
+                <input type="number" name="total_teams" id="total_teams" class="form-control" value="" required min="2">
             </div>
             
             <div class="form-group">
                 <label for="budget" class="form-label">Total Budget per Team (₹)</label>
-                <input type="number" name="budget" id="budget" class="form-control" value="100000000" step="any" required>
+                <input type="number" name="budget" id="budget" class="form-control" value="" step="any" required>
             </div>
         </div>
         

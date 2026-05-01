@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Auction;
+use App\Models\Team;
 use Illuminate\Http\Request;
 
 class AuctionController extends Controller
@@ -22,7 +24,7 @@ class AuctionController extends Controller
             'budget' => 'required|numeric|min:0',
         ]);
 
-        $auction = \App\Models\Auction::create([
+        $auction = Auction::create([
             'name' => $request->name,
             'sport' => $request->sport,
             'min_players' => $request->min_players,
@@ -36,7 +38,7 @@ class AuctionController extends Controller
 
         // Create the teams
         for ($i = 1; $i <= $request->total_teams; $i++) {
-            \App\Models\Team::create([
+            Team::create([
                 'auction_id' => $auction->id,
                 'name' => "Team $i",
                 'team_pass' => strtoupper(\Illuminate\Support\Str::random(6)),
