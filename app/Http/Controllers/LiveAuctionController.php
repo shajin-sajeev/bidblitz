@@ -19,6 +19,25 @@ class LiveAuctionController extends Controller
     public function index(Auction $auction, Request $request)
     {
         $isOwner = $auction->created_by === auth()->id();
+        $user = auth()->user();
+
+        // Check if user is assigned to a team in this auction (either as owner or team member)
+        $userTeam = Team::where('auction_id', $auction->id)
+            ->where(function ($q) use ($user) {
+                $q->where('owner_id', $user->id)
+                    ->orWhereHas('teamOwners', function ($q2) use ($user) {
+                        $q2->where('user_id', $user->id);
+                    });
+            })
+            ->first();
+
+        // Allow access only if user is auction owner or assigned to a team
+        if (!$isOwner && !$userTeam) {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'You are not assigned to any team in this auction.'], 403);
+            }
+            abort(403, 'You are not assigned to any team in this auction.');
+        }
 
         if ($isOwner && blank($auction->auction_pass)) {
             $auction->forceFill(['auction_pass' => strtoupper(Str::random(6))])->save();
@@ -60,6 +79,8 @@ class LiveAuctionController extends Controller
                 'auction_id' => $auction->id,
                 'user_id' => auth()->id(),
                 'is_owner' => $auction->created_by === auth()->id(),
+                'has_team' => $userTeam ? true : false,
+                'team_name' => $userTeam ? $userTeam->name : null,
                 'currentPlayer' => $currentPlayer,
                 'highestBid' => $highestBid,
             ]);
@@ -67,6 +88,11 @@ class LiveAuctionController extends Controller
             return response()->json([
                 'currentPlayer' => $currentPlayer,
                 'highestBid' => $highestBid,
+                'userTeam' => $userTeam ? [
+                    'id' => $userTeam->id,
+                    'name' => $userTeam->name,
+                    'is_owner' => $userTeam->owner_id === auth()->id()
+                ] : null,
             ]);
         }
 

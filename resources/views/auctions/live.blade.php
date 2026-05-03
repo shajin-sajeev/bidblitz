@@ -457,6 +457,23 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
         <div>
             <h2 style="margin-bottom: 0.35rem;">Live Auction: {{ $auction->name }}</h2>
             <p style="margin: 0;">Manage teams, spin players, assign purchases, and track every budget in one place.</p>
+            @if(!$isOwner)
+                @php
+                    $userTeam = \App\Models\Team::where('auction_id', $auction->id)
+                        ->where(function ($q) {
+                            $q->where('owner_id', auth()->id())
+                                ->orWhereHas('teamOwners', function ($q2) {
+                                    $q2->where('user_id', auth()->id());
+                                });
+                        })
+                        ->first();
+                @endphp
+                @if($userTeam)
+                    <div style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; display: inline-block;">
+                        <span style="color: #22c55e; font-weight: 600; font-size: 0.85rem;">You are assigned to: {{ $userTeam->name }}</span>
+                    </div>
+                @endif
+            @endif
             @if($isOwner && filled($auction->auction_pass))
                 <div class="auction-pass-owner-only">
                     <span class="auction-pass-label">Auction pass key — visible only to you</span>
@@ -829,6 +846,13 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                         console.log('Polling response data:', data);
                         const modal = document.getElementById('selected-player-modal');
                         
+                        // Log user team information for debugging
+                        if (data.userTeam) {
+                            console.log('User team info:', data.userTeam);
+                        } else {
+                            console.log('User is not assigned to any team');
+                        }
+                        
                         // Check if wheel was spun and database confirms player has pending status
                         if (data.currentPlayer) {
                             console.log('Database confirms wheel was spun, current player:', data.currentPlayer.name);
@@ -960,6 +984,14 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                 })
                 .then(data => {
                     console.log('Immediate check on page load - data:', data);
+                    
+                    // Log user team information for debugging
+                    if (data.userTeam) {
+                        console.log('User is assigned to team:', data.userTeam.name);
+                    } else {
+                        console.log('User is not assigned to any team - should not see modal');
+                    }
+                    
                     // Show modal ONLY if there's a current player (wheel was spun) with pending status from database
                     if (data.currentPlayer && data.currentPlayer.status === 'pending') {
                         console.log('Database confirms player has pending status, showing modal on page load');
