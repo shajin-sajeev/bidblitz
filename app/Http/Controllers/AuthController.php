@@ -45,8 +45,6 @@ class AuthController extends Controller
             'email' => $user->username . '@player.com', // Generate a placeholder email
             'phone' => $user->phone,
             'specialization' => 'All-rounder', // Default specialization
-            'experience_years' => 0, // Default experience
-            'base_price' => 1000.00, // Default base price
             'description' => 'Player profile created during registration',
             'avatar' => 'https://picsum.photos/seed/' . $user->username . '/400/400.jpg',
             'is_active' => true,

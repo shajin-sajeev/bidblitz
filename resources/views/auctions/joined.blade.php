@@ -30,9 +30,11 @@
                         <span style="background: {{ $auction->status === 'live' ? '#10b981' : ($auction->status === 'completed' ? '#ef4444' : 'var(--primary)') }}; padding: 6px 16px; border-radius: 20px; font-size: 0.9rem; color: white; font-weight: 600; display: inline-block;">
                             {{ ucfirst($auction->status) }}
                         </span>
-                        <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
-                            Pass: <strong>{{ $auction->auction_pass }}</strong>
-                        </div>
+                        @if($auction->created_by === auth()->id())
+                            <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                                Auction pass: <strong>{{ $auction->auction_pass }}</strong>
+                            </div>
+                        @endif
                     </div>
                 </div>
 

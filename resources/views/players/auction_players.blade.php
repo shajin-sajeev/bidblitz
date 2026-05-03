@@ -151,14 +151,6 @@ function renderPlayers(players) {
                     <span class="text-gray-400">Specialization:</span>
                     <span class="text-white">${player.specialization}</span>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-400">Experience:</span>
-                    <span class="text-white">${player.experience_years} years</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-400">Base Price:</span>
-                    <span class="text-yellow-400 font-semibold">₹${player.base_price}</span>
-                </div>
             </div>
             
             <div class="mt-4">

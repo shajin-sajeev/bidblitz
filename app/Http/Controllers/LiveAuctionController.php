@@ -11,12 +11,64 @@ use App\Models\Team;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class LiveAuctionController extends Controller
 {
-    public function index(Auction $auction)
+    public function index(Auction $auction, Request $request)
     {
         $isOwner = $auction->created_by === auth()->id();
+
+        if ($isOwner && blank($auction->auction_pass)) {
+            $auction->forceFill(['auction_pass' => strtoupper(Str::random(6))])->save();
+            $auction->refresh();
+        }
+
+        // Handle AJAX polling request for currentPlayer
+        if ($request->ajax() && $request->get('ajax') === 'currentPlayer') {
+            $currentPlayer = Cache::get($this->currentPlayerKey($auction));
+            $highestBid = Cache::get($this->highestBidKey($auction));
+            
+            // If we have a cached player, verify their actual database status
+            if ($currentPlayer && isset($currentPlayer['auction_player_id'])) {
+                $auctionPlayer = AuctionPlayer::find($currentPlayer['auction_player_id']);
+                
+                if ($auctionPlayer) {
+                    // Update the cached player data with actual database status
+                    $currentPlayer['status'] = $auctionPlayer->status;
+                    
+                    // If status is not pending, clear the cache and return null
+                    if ($auctionPlayer->status !== 'pending') {
+                        Cache::forget($this->currentPlayerKey($auction));
+                        $currentPlayer = null; // Don't return the player
+                    }
+                    
+                    // Update cache with current status if still pending
+                    if ($auctionPlayer->status === 'pending') {
+                        Cache::put($this->currentPlayerKey($auction), $currentPlayer, now()->addHours(6));
+                    }
+                } else {
+                    // Auction player not found in database, clear cache
+                    Cache::forget($this->currentPlayerKey($auction));
+                    $currentPlayer = null;
+                }
+            }
+            
+            // Debug logging
+            Log::info('AJAX currentPlayer request with DB verification', [
+                'auction_id' => $auction->id,
+                'user_id' => auth()->id(),
+                'is_owner' => $auction->created_by === auth()->id(),
+                'currentPlayer' => $currentPlayer,
+                'highestBid' => $highestBid,
+            ]);
+            
+            return response()->json([
+                'currentPlayer' => $currentPlayer,
+                'highestBid' => $highestBid,
+            ]);
+        }
 
         $auction->load([
             'teams.ownerPlayer',
@@ -41,6 +93,16 @@ class LiveAuctionController extends Controller
         $currentPlayer = Cache::get($this->currentPlayerKey($auction));
         $highestBid = Cache::get($this->highestBidKey($auction));
 
+        $canStartLive = $auction->status === 'active' && $auction->canStartLive();
+        $liveStartProgress = null;
+        if ($isOwner && $auction->status === 'active') {
+            $liveStartProgress = [
+                'registered' => $auction->teams->filter(fn ($t) => $t->owner_player_id !== null)->count(),
+                'joined' => $auction->teams->filter(fn ($t) => $t->owner_id !== null)->count(),
+                'required' => (int) $auction->total_teams,
+            ];
+        }
+
         return view('auctions.live', compact(
             'auction',
             'isOwner',
@@ -49,7 +111,9 @@ class LiveAuctionController extends Controller
             'pendingPlayers',
             'teamSummaries',
             'currentPlayer',
-            'highestBid'
+            'highestBid',
+            'canStartLive',
+            'liveStartProgress'
         ));
     }
 
@@ -61,6 +125,20 @@ class LiveAuctionController extends Controller
 
         if (!in_array($auction->status, ['active', 'live'], true)) {
             $message = 'Only active auctions can be started.';
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+
+            return back()->with('warning', $message);
+        }
+
+        $auction->loadMissing('teams');
+        if ($auction->status === 'active' && ! $auction->canStartLive()) {
+            $registered = $auction->teams->filter(fn ($t) => $t->owner_player_id !== null)->count();
+            $joined = $auction->teams->filter(fn ($t) => $t->owner_id !== null)->count();
+            $need = (int) $auction->total_teams;
+            $message = "You cannot go live yet. Finish Team Setup for all {$need} teams (owner players assigned: {$registered}/{$need}) and ensure each team has joined with their team pass (teams claimed: {$joined}/{$need}).";
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => $message], 422);
@@ -137,8 +215,8 @@ class LiveAuctionController extends Controller
             'name' => $player->name,
             'role' => $player->specialization ?? 'All-rounder',
             'base_price' => (float) $pendingPlayer->base_price,
-            'experience_years' => $player->experience_years ?? 0,
             'avatar' => $player->avatar,
+            'status' => $pendingPlayer->status,
         ];
 
         Cache::put($this->currentPlayerKey($auction), $playerData, now()->addHours(6));
@@ -326,8 +404,21 @@ class LiveAuctionController extends Controller
             ]
         );
 
-        Cache::forget($this->currentPlayerKey($auction));
+        // Update cached player data with sold status and clear after delay
+        $updatedPlayerData = $currentPlayerData;
+        $updatedPlayerData['status'] = 'sold';
+        $updatedPlayerData['sold_price'] = $currentBidData['amount'];
+        $updatedPlayerData['team_name'] = $team->name;
+        Cache::put($this->currentPlayerKey($auction), $updatedPlayerData, now()->addMinutes(2));
+        
+        // Clear highest bid immediately
         Cache::forget($this->highestBidKey($auction));
+        
+        // Clear current player cache after 10 seconds to allow polling to detect change
+        dispatch(function () use ($auction) {
+            sleep(10);
+            Cache::forget($this->currentPlayerKey($auction));
+        })->afterResponse();
 
         $msg = "{$currentPlayerData['name']} SOLD to {$team->name} for Rs. {$currentBidData['amount']}";
         broadcast(new \App\Events\PlayerSold($auction->id, $msg))->toOthers();
@@ -350,8 +441,19 @@ class LiveAuctionController extends Controller
             ->where('auction_id', $auction->id)
             ->update(['status' => 'unsold']);
 
-        Cache::forget($this->currentPlayerKey($auction));
+        // Update cached player data with unsold status and clear after delay
+        $updatedPlayerData = $currentPlayerData;
+        $updatedPlayerData['status'] = 'unsold';
+        Cache::put($this->currentPlayerKey($auction), $updatedPlayerData, now()->addMinutes(2));
+        
+        // Clear highest bid immediately
         Cache::forget($this->highestBidKey($auction));
+        
+        // Clear current player cache after 10 seconds to allow polling to detect change
+        dispatch(function () use ($auction) {
+            sleep(10);
+            Cache::forget($this->currentPlayerKey($auction));
+        })->afterResponse();
 
         $msg = "{$currentPlayerData['name']} went UNSOLD.";
         broadcast(new \App\Events\PlayerUnsold($auction->id, $msg))->toOthers();

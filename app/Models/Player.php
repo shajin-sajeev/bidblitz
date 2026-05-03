@@ -11,13 +11,11 @@ class Player extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'unique_username', 'email', 'phone', 'specialization', 
-        'experience_years', 'base_price', 'description', 'avatar', 'is_active'
+        'name', 'unique_username', 'email', 'phone', 'specialization',
+        'description', 'avatar', 'is_active'
     ];
 
     protected $casts = [
-        'base_price' => 'decimal:2',
-        'experience_years' => 'integer',
         'is_active' => 'boolean',
         'profile' => 'array',
         'stats' => 'array',

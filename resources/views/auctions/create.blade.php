@@ -44,6 +44,11 @@
                 <label for="budget" class="form-label">Total Budget per Team (₹)</label>
                 <input type="number" name="budget" id="budget" class="form-control" value="" step="any" required>
             </div>
+            
+            <div class="form-group">
+                <label for="min_amount" class="form-label">Minimum Amount for Player (₹)</label>
+                <input type="number" name="min_amount" id="min_amount" class="form-control" value="" step="any" min="0" required>
+            </div>
         </div>
         
         <div class="mt-4" style="text-align: right;">

@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+<div class="dashboard-container" style="display: flex; gap: 2rem; align-items: flex-start;">
     <!-- Sidebar -->
-    <div style="width: 280px; flex-shrink: 0;">
+    <div class="dashboard-sidebar" style="width: 280px; flex-shrink: 0;">
         <!-- User Profile Card -->
         <div class="glass-card profile-card mb-4">
             <div class="profile-header">
@@ -75,7 +75,7 @@
     </div>
 
     <!-- Main Content -->
-    <div style="flex-grow: 1; min-width: 300px;">
+    <div class="dashboard-main" style="flex: 1; min-width: 0; overflow: hidden;">
         <!-- Statistics Cards -->
         <div class="grid grid-cols-4 gap-4 mb-8">
             <div class="glass-card text-center">
@@ -96,9 +96,15 @@
             </div>
         </div>
 
-        <!-- Recent Auctions -->
-        <div class="glass-card mb-8">
-            <h3>📊 Recent Auctions</h3>
+        <!-- All Auctions with Pagination -->
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>📊 All Auctions</h3>
+                <a href="{{ route('auctions.create') }}" class="btn btn-primary" style="padding: 0.5rem 1rem;">
+                    ➕ Create Auction
+                </a>
+            </div>
+            
             <div style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
@@ -112,14 +118,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            $recentAuctions = \App\Models\Auction::with('creator')
-                                ->orderBy('created_at', 'desc')
-                                ->limit(10)
-                                ->get();
-                        @endphp
-                        @forelse($recentAuctions as $auction)
-                            <tr style="border-bottom: 1px solid var(--border-color);">
+                        @forelse($auctions as $auction)
+                            <tr style="border-bottom: 1px solid var(--border-color);" data-auction-id="{{ $auction->id }}">
                                 <td style="padding: 1rem;">
                                     <div>
                                         <strong>{{ $auction->name }}</strong>
@@ -139,10 +139,14 @@
                                         @if($auction->created_by === auth()->id())
                                             <a href="{{ route('auctions.pool', $auction) }}" class="btn" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Manage</a>
                                             @if($auction->status === 'active')
-                                                <form method="POST" action="{{ route('auctions.start', $auction) }}" style="display: inline;">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Start Auction</button>
-                                                </form>
+                                                @if($auction->canStartLive())
+                                                    <form method="POST" action="{{ route('auctions.start', $auction) }}" style="display: inline;">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Start Auction</button>
+                                                    </form>
+                                                @else
+                                                    <span style="font-size: 0.72rem; color: var(--text-muted);" title="Complete Team Setup and have all teams join before starting.">Start locked</span>
+                                                @endif
                                             @endif
                                         @endif
                                         <a href="{{ route('auctions.live', $auction) }}" class="btn btn-accent" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">{{ $auction->status === 'live' ? 'Live' : 'View' }}</a>
@@ -159,53 +163,51 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="grid grid-cols-2 gap-8">
-            <div class="glass-card">
-                <h3>⚡ Quick Actions</h3>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <a href="{{ route('auctions.create') }}" class="btn btn-primary">
-                        ➕ Create New Auction
-                    </a>
-                    <a href="{{ route('auctions.join') }}" class="btn btn-accent">
-                        🔗 Join Existing Auction
-                    </a>
-                    <a href="{{ route('profile.create') }}" class="btn" style="background: rgba(255,255,255,0.1);">
-                        ⚙️ Update Profile
-                    </a>
-                </div>
-            </div>
             
-            <div class="glass-card">
-                <h3>📈 Activity Feed</h3>
-                @php
-                    $recentActivity = \App\Models\AuctionHistory::with(['auction', 'user'])
-                        ->orderBy('action_at', 'desc')
-                        ->limit(5)
-                        ->get();
-                @endphp
-                @forelse($recentActivity as $activity)
-                    <div style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
-                        <div style="font-size: 0.9rem;">
-                            <strong>{{ $activity->auction->name ?? 'Unknown Auction' }}</strong>
-                        </div>
-                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
-                            {{ ucfirst(str_replace('_', ' ', $activity->action)) }} 
-                            @if($activity->user) by {{ $activity->user->name ?? 'Unknown' }} @endif
-                            <span style="float: right;">{{ $activity->action_at->diffForHumans() }}</span>
-                        </div>
+            <!-- Pagination -->
+            @if($auctions->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Showing <span>{{ $auctions->firstItem() }}</span> to <span>{{ $auctions->lastItem() }}</span> of <span>{{ $auctions->total() }}</span> auctions
                     </div>
-                @empty
-                    <p class="text-muted">No recent activity.</p>
-                @endforelse
-            </div>
+                    {{ $auctions->links('pagination::custom') }}
+                </div>
+            @endif
         </div>
     </div>
 </div>
 
 <style>
+/* Dashboard Layout Fixes */
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column !important;
+    }
+    
+    .dashboard-sidebar {
+        width: 100% !important;
+        margin-bottom: 2rem;
+    }
+    
+    .dashboard-main {
+        width: 100% !important;
+    }
+    
+    .grid.grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .grid.grid-cols-2 {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid.grid-cols-4 {
+        grid-template-columns: 1fr !important;
+    }
+}
+
 .nav-item {
     display: block;
     padding: 0.75rem 1rem;
@@ -227,5 +229,196 @@
     color: var(--primary);
     font-weight: 600;
 }
+
+/* Ensure proper table scrolling on mobile */
+@media (max-width: 640px) {
+    .glass-card table {
+        font-size: 0.85rem;
+    }
+    
+    .glass-card th,
+    .glass-card td {
+        padding: 0.5rem !important;
+    }
+    
+    .btn {
+        font-size: 0.7rem !important;
+        padding: 0.2rem 0.4rem !important;
+    }
+}
+
+/* Modern Pagination Styles */
+.pagination-wrapper {
+    margin-top: 3rem;
+    padding: 2rem 0;
+    background: color-mix(in srgb, var(--card-bg) 92%, var(--primary) 8%);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 auto;
+    max-width: fit-content;
+}
+
+.pagination-items {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: color-mix(in srgb, var(--card-bg) 90%, #000000 10%);
+    border-radius: 100px;
+    backdrop-filter: blur(10px);
+}
+
+.pagination .page-item {
+    list-style: none;
+    margin: 0;
+}
+
+.pagination .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 16px;
+    margin: 0;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 50px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.pagination .page-link:hover {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    font-weight: 600;
+}
+
+.pagination .page-item.disabled .page-link {
+    background: transparent;
+    border-color: transparent;
+    color: color-mix(in srgb, var(--text-muted) 50%, transparent);
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.5;
+}
+
+.pagination .page-link::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all 0.6s ease;
+    z-index: 0;
+}
+
+.pagination .page-link:hover::before {
+    width: 100%;
+    height: 100%;
+}
+
+.pagination .page-link span {
+    position: relative;
+    z-index: 1;
+}
+
+/* Pagination arrows styling */
+.pagination .page-link svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.3s ease;
+}
+
+.pagination .page-link:hover svg {
+    transform: translateX(-2px);
+}
+
+.pagination .page-link:hover[rel="next"] svg {
+    transform: translateX(2px);
+}
+
+/* Enhanced pagination info */
+.pagination-info {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pagination-info::before,
+.pagination-info::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+    max-width: 100px;
+}
+
+.pagination-info span {
+    color: #667eea;
+    font-weight: 600;
+    font-size: 1rem;
+    text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .pagination-items {
+        padding: 0.25rem;
+        gap: 0.25rem;
+    }
+    
+    .pagination .page-link {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        font-size: 0.85rem;
+    }
+    
+    .pagination-info {
+        font-size: 0.8rem;
+    }
+    
+    .pagination-info::before,
+    .pagination-info::after {
+        max-width: 50px;
+    }
+}
+
 </style>
+
 @endsection

@@ -22,6 +22,7 @@ class AuctionController extends Controller
             'max_players' => 'required|integer|min:1|gte:min_players',
             'total_teams' => 'required|integer|min:2',
             'budget' => 'required|numeric|min:0',
+            'min_amount' => 'required|numeric|min:0',
         ]);
 
         $auction = Auction::create([
@@ -31,6 +32,7 @@ class AuctionController extends Controller
             'max_players' => $request->max_players,
             'total_teams' => $request->total_teams,
             'budget' => $request->budget,
+            'min_amount' => $request->min_amount,
             'auction_pass' => strtoupper(\Illuminate\Support\Str::random(6)),
             'status' => 'pending',
             'created_by' => auth()->id(),

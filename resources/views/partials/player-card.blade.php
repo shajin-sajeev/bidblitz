@@ -12,8 +12,6 @@
             <div class="player-name">{{ $player->name ?? 'Unknown Player' }}</div>
             <div class="player-username mt-1">{{ $player->unique_username ?: strtolower(str_replace(' ', '', $player->name)) }}</div>
             <div class="player-specialization mt-2">{{ $player->specialization ?? 'All-rounder' }}</div>
-            <div class="player-experience mt-1">{{ $player->experience_years ?? 0 }} years experience</div>
-            <div class="player-base-price mt-1">Base: ₹{{ number_format($player->base_price ?? 0, 2) }}</div>
         </div>
         
         <div class="price-input-group">

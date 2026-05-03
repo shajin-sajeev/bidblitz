@@ -24,17 +24,11 @@
             <div class="pool-player-username">{{ $item->player->unique_username ?: strtolower(str_replace(' ', '', $item->player->name)) }}</div>
             <div class="pool-player-meta">
                 <span>{{ $item->player->specialization ?? 'All-rounder' }}</span>
-                <span>{{ $item->player->experience_years ?? 0 }} yrs exp</span>
             </div>
         </div>
     </div>
 
     <div class="pool-player-actions">
-        <div class="pool-price-panel">
-            <span>Base Price</span>
-            <strong>Rs. {{ number_format($item->base_price) }}</strong>
-        </div>
-
         @if(!$item->team_id && !in_array($item->status, ['sold'], true))
             <button type="button"
                     class="remove-pool-player-btn"

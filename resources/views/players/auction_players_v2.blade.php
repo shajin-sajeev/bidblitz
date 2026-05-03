@@ -275,14 +275,6 @@ function renderPlayers(players) {
                             <span class="text-gray-400 text-sm">🎯 Role</span>
                             <span class="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full text-xs font-semibold">${player.specialization}</span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400 text-sm">⏱️ Experience</span>
-                            <span class="text-white text-sm">${player.experience_years} years</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400 text-sm">💰 Base Price</span>
-                            <span class="text-yellow-400 font-bold text-lg">₹${player.base_price}</span>
-                        </div>
                     </div>
                     
                     <!-- Action Button -->

@@ -65,14 +65,6 @@
                             <label class="block text-sm font-medium text-gray-300 mb-1">Specialization *</label>
                             <input type="text" name="specialization" required class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:border-yellow-500">
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-1">Experience Years *</label>
-                            <input type="number" name="experience_years" min="0" max="50" required class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:border-yellow-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-300 mb-1">Base Price *</label>
-                            <input type="number" name="base_price" step="0.01" min="0" required class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:border-yellow-500">
-                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-300 mb-1">Description</label>
@@ -161,14 +153,6 @@ function renderPlayers(players) {
                 <div class="flex justify-between">
                     <span class="text-gray-400">Specialization:</span>
                     <span class="text-white">${player.specialization}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-400">Experience:</span>
-                    <span class="text-white">${player.experience_years} years</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-400">Base Price:</span>
-                    <span class="text-yellow-400 font-semibold">₹${player.base_price}</span>
                 </div>
             </div>
             

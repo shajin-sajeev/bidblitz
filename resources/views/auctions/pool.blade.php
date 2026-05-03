@@ -344,34 +344,10 @@
 .pool-player-actions {
     display: flex;
     align-items: stretch;
+    justify-content: flex-end;
     gap: 0.75rem;
     position: relative;
     z-index: 1;
-}
-
-.pool-price-panel {
-    flex: 1;
-    border-radius: 12px;
-    padding: 0.72rem 0.85rem;
-    background: rgba(2, 6, 23, 0.42);
-    border: 1px solid rgba(45, 212, 191, 0.18);
-}
-
-.pool-price-panel span {
-    display: block;
-    color: rgba(203, 213, 225, 0.7);
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0;
-}
-
-.pool-price-panel strong {
-    display: block;
-    color: #5eead4;
-    font-size: 1.18rem;
-    line-height: 1.25;
-    margin-top: 0.18rem;
 }
 
 .remove-pool-player-btn {
@@ -404,8 +380,6 @@ body.light-theme .player-card {
 
 body.light-theme .player-username,
 body.light-theme .player-specialization,
-body.light-theme .player-experience,
-body.light-theme .player-base-price,
 body.light-theme .glass-card .text-gray-400,
 body.light-theme .glass-card .text-gray-500,
 body.light-theme #available-tab .text-gray-400,
@@ -440,19 +414,6 @@ body.light-theme .pool-player-meta span {
     color: #334155;
     background: rgba(241, 245, 249, 0.92);
     border-color: rgba(15, 23, 42, 0.12);
-}
-
-body.light-theme .pool-price-panel {
-    background: rgba(248, 250, 252, 0.92);
-    border-color: rgba(13, 148, 136, 0.2);
-}
-
-body.light-theme .pool-price-panel span {
-    color: #64748b;
-}
-
-body.light-theme .pool-price-panel strong {
-    color: #0f766e;
 }
 
 body.light-theme .pool-player-avatar {
@@ -772,8 +733,6 @@ body.light-theme .pagination-items {
                             <div class="player-name">{{ $player->name ?? 'Unknown Player' }}</div>
                             <div class="player-username mt-1">{{ $player->unique_username ?: strtolower(str_replace(' ', '', $player->name)) }}</div>
                             <div class="player-specialization mt-2">{{ $player->specialization ?? 'All-rounder' }}</div>
-                            <div class="player-experience mt-1">{{ $player->experience_years ?? 0 }} years experience</div>
-                            <div class="player-base-price mt-1">Base: ₹{{ number_format($player->base_price ?? 0, 2) }}</div>
                         </div>
                         
                         <div class="price-input-group">

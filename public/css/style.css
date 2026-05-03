@@ -15,6 +15,13 @@
     --glass-blur: blur(10px);
     --navbar-bg: rgba(15, 23, 42, 0.8);
     --form-bg: rgba(15, 23, 42, 0.6);
+    /* Native <select> surfaces */
+    --select-surface: rgba(24, 24, 35, 0.95);
+    --select-border-strong: rgba(251, 191, 36, 0.55);
+    --select-border-hover: rgba(251, 191, 36, 0.85);
+    --select-menu-option-bg: #1e293b;
+    --select-menu-option-color: #f8fafc;
+    --select-shadow: 0 6px 22px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* Light Theme */
@@ -33,6 +40,12 @@ body.light-theme {
     --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     --navbar-bg: rgba(255, 255, 255, 0.95);
     --form-bg: rgba(255, 255, 255, 0.8);
+    --select-surface: #ffffff;
+    --select-border-strong: rgba(217, 119, 6, 0.65);
+    --select-border-hover: rgba(180, 83, 9, 0.9);
+    --select-menu-option-bg: #ffffff;
+    --select-menu-option-color: #0f172a;
+    --select-shadow: 0 6px 22px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 * {
@@ -122,6 +135,82 @@ p { color: var(--text-muted); margin-bottom: 1rem; }
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+}
+
+/* Native selects — high contrast, custom chevron, works in dark & light theme */
+select.form-control {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    color-scheme: dark;
+    cursor: pointer;
+    min-height: 3rem;
+    padding: 0.65rem 3rem 0.65rem 1.05rem;
+    background-color: var(--select-surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    background-size: 1.25rem;
+    border-width: 2px;
+    border-color: var(--select-border-strong);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: var(--text-main);
+    box-shadow: var(--select-shadow);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+body.light-theme select.form-control {
+    color-scheme: light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+select.form-control:hover {
+    border-color: var(--select-border-hover);
+    box-shadow:
+        0 8px 26px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(251, 191, 36, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.light-theme select.form-control:hover {
+    box-shadow:
+        0 8px 28px rgba(15, 23, 42, 0.12),
+        0 0 0 1px rgba(251, 191, 36, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+select.form-control:focus {
+    outline: none;
+    transform: none;
+    border-color: var(--primary);
+    box-shadow:
+        0 0 0 4px rgba(251, 191, 36, 0.28),
+        0 10px 28px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.light-theme select.form-control:focus {
+    box-shadow:
+        0 0 0 4px rgba(251, 191, 36, 0.35),
+        0 10px 30px rgba(15, 23, 42, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+
+select.form-control:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    filter: grayscale(0.25);
+}
+
+select.form-control option,
+select.form-control optgroup {
+    background-color: var(--select-menu-option-bg);
+    color: var(--select-menu-option-color);
+    font-weight: 600;
+    padding: 0.5rem;
 }
 
 /* Buttons */
@@ -286,16 +375,36 @@ p { color: var(--text-muted); margin-bottom: 1rem; }
     right: 0;
     margin-top: 0.5rem;
     background: var(--card-bg);
-    border: var(--glass-border);
-    border-radius: 12px;
-    box-shadow: var(--glass-shadow);
+    border: 2px solid rgba(251, 191, 36, 0.42);
+    border-radius: 14px;
+    box-shadow:
+        0 14px 42px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(251, 191, 36, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
     backdrop-filter: var(--glass-blur);
-    min-width: 280px;
+    min-width: 288px;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all 0.3s ease;
+    transition: opacity 0.25s ease, visibility 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
     z-index: 100;
+    overflow: hidden;
+}
+
+.profile-dropdown::before {
+    content: '';
+    display: block;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), #14b8a6, var(--accent));
+    opacity: 0.95;
+}
+
+body.light-theme .profile-dropdown {
+    border-color: rgba(217, 119, 6, 0.45);
+    box-shadow:
+        0 18px 48px rgba(15, 23, 42, 0.14),
+        0 0 0 1px rgba(251, 191, 36, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 .navbar-profile:hover .profile-dropdown {
@@ -354,16 +463,25 @@ p { color: var(--text-muted); margin-bottom: 1rem; }
 
 .dropdown-item {
     display: block;
-    padding: 0.75rem 1rem;
+    padding: 0.8rem 1.05rem;
     color: var(--text-main);
     text-decoration: none;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
+    transition: background 0.18s ease, color 0.18s ease, padding-left 0.18s ease;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border-radius: 8px;
+    margin: 0 0.35rem;
 }
 
 .dropdown-item:hover {
-    background: rgba(251, 191, 36, 0.1);
+    background: rgba(251, 191, 36, 0.18);
     color: var(--primary);
+    padding-left: 1.15rem;
+}
+
+body.light-theme .dropdown-item:hover {
+    background: rgba(251, 191, 36, 0.22);
+    color: #b45309;
 }
 
 .dropdown-logout {

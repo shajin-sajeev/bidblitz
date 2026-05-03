@@ -122,7 +122,6 @@ class PlayerPoolController extends Controller
                             <div class="text-sm text-blue-400">' . $player->specialization . '</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-green-400 font-bold text-lg">₹' . number_format($auctionPlayer->base_price) . '</div>
                             <div class="text-xs px-2 py-1 rounded-full inline-block mt-1 bg-yellow-500/20 text-yellow-400">
                                 Pending
                             </div>

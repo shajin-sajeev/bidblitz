@@ -59,10 +59,14 @@
                             <a href="{{ route('auctions.pool', $auction) }}" class="btn" style="background: rgba(255,255,255,0.1); font-size: 0.85rem; padding: 0.5rem 1rem;">⚙️ Manage</a>
                         @endif
                         @if($auction->status === 'active')
-                            <form method="POST" action="{{ route('auctions.start', $auction) }}" style="display: inline;">
-                                @csrf
-                                <button type="submit" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">Start Auction</button>
-                            </form>
+                            @if($auction->canStartLive())
+                                <form method="POST" action="{{ route('auctions.start', $auction) }}" style="display: inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">Start Auction</button>
+                                </form>
+                            @else
+                                <span class="btn" style="font-size: 0.85rem; padding: 0.5rem 1rem; opacity: 0.65; cursor: help;" title="Assign every team’s owner player (Team Setup) and ensure each team has joined before starting.">Start locked</span>
+                            @endif
                         @endif
                         @if(in_array($auction->status, ['active', 'live'], true))
                             <a href="{{ route('auctions.live', $auction) }}" class="btn btn-accent" style="font-size: 0.85rem; padding: 0.5rem 1rem;">Live Room</a>

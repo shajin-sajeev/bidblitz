@@ -36,8 +36,6 @@ class PlayerController extends Controller
             'email' => 'required|email|unique:players,email',
             'phone' => 'nullable|string|max:20',
             'specialization' => 'required|string|max:255',
-            'experience_years' => 'required|integer|min:0|max:50',
-            'base_price' => 'required|numeric|min:0',
             'description' => 'nullable|string|max:1000',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -85,8 +83,6 @@ class PlayerController extends Controller
             'email' => 'required|email|unique:players,email,' . $player->id,
             'phone' => 'nullable|string|max:20',
             'specialization' => 'required|string|max:255',
-            'experience_years' => 'required|integer|min:0|max:50',
-            'base_price' => 'required|numeric|min:0',
             'description' => 'nullable|string|max:1000',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);

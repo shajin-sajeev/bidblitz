@@ -32,9 +32,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/theme', [\App\Http\Controllers\SettingsController::class, 'updateTheme'])->name('settings.theme.update');
 
     Route::middleware([\App\Http\Middleware\EnsureProfileComplete::class])->group(function () {
-        Route::get('/dashboard', function () {
-            return view('dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'getAllAuctions'])->name('dashboard');
+        
+        // Dashboard Search Routes
+        Route::get('/dashboard/auctions/search', [\App\Http\Controllers\DashboardController::class, 'searchAuctions'])->name('dashboard.auctions.search');
+        Route::get('/dashboard/auctions/recent', [\App\Http\Controllers\DashboardController::class, 'recentAuctions'])->name('dashboard.auctions.recent');
         
         // Auction Management
         Route::get('/auctions/create', [\App\Http\Controllers\AuctionController::class, 'create'])->name('auctions.create');
