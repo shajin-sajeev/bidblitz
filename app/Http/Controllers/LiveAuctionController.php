@@ -57,14 +57,14 @@ class LiveAuctionController extends Controller
                     // Update the cached player data with actual database status
                     $currentPlayer['status'] = $auctionPlayer->status;
                     
-                    // If status is not pending, clear the cache and return null
-                    if ($auctionPlayer->status !== 'pending') {
+                    // Pending players are new to the round; unsold players can return after the first pass.
+                    if (!in_array($auctionPlayer->status, ['pending', 'unsold'], true)) {
                         Cache::forget($this->currentPlayerKey($auction));
                         $currentPlayer = null; // Don't return the player
                     }
                     
-                    // Update cache with current status if still pending
-                    if ($auctionPlayer->status === 'pending') {
+                    // Update cache with current status if still available for bidding.
+                    if (in_array($auctionPlayer->status, ['pending', 'unsold'], true)) {
                         Cache::put($this->currentPlayerKey($auction), $currentPlayer, now()->addHours(6));
                     }
                 } else {
@@ -224,25 +224,33 @@ class LiveAuctionController extends Controller
             return response()->json(['message' => 'Start the auction before spinning players.'], 422);
         }
 
-        $pendingPlayer = AuctionPlayer::where('auction_id', $auction->id)
+        $auctionPlayer = AuctionPlayer::where('auction_id', $auction->id)
             ->where('status', 'pending')
             ->with('player')
             ->inRandomOrder()
             ->first();
 
-        if (!$pendingPlayer || !$pendingPlayer->player) {
+        if (!$auctionPlayer) {
+            $auctionPlayer = AuctionPlayer::where('auction_id', $auction->id)
+                ->where('status', 'unsold')
+                ->with('player')
+                ->inRandomOrder()
+                ->first();
+        }
+
+        if (!$auctionPlayer || !$auctionPlayer->player) {
             return response()->json(['message' => 'No players left to spin.'], 404);
         }
 
-        $player = $pendingPlayer->player;
+        $player = $auctionPlayer->player;
         $playerData = [
             'id' => $player->id,
-            'auction_player_id' => $pendingPlayer->id,
+            'auction_player_id' => $auctionPlayer->id,
             'name' => $player->name,
             'role' => $player->specialization ?? 'All-rounder',
-            'base_price' => (float) $pendingPlayer->base_price,
+            'base_price' => (float) $auctionPlayer->base_price,
             'avatar' => $player->avatar,
-            'status' => $pendingPlayer->status,
+            'status' => $auctionPlayer->status,
         ];
 
         Cache::put($this->currentPlayerKey($auction), $playerData, now()->addHours(6));
@@ -293,13 +301,9 @@ class LiveAuctionController extends Controller
             return back()->withErrors(['team_id' => 'This team already has the maximum number of players.']);
         }
 
-        $spent = (float) AuctionPlayer::where('auction_id', $auction->id)
-            ->where('team_id', $team->id)
-            ->where('status', 'sold')
-            ->sum('sold_price');
-
-        if ($spent + $price > (float) $auction->budget) {
-            return back()->withErrors(['price' => 'This sale exceeds the selected team budget.']);
+        $maxBid = $this->maxBidForTeam($auction, $team);
+        if ($price > $maxBid) {
+            return back()->withErrors(['price' => "This sale exceeds the selected team's maximum bid amount of Rs. {$maxBid}."]);
         }
 
         DB::transaction(function () use ($auction, $auctionPlayer, $team, $price) {
@@ -356,7 +360,7 @@ class LiveAuctionController extends Controller
         $maxBid = $this->maxBidForTeam($auction, $team);
 
         if ((float) $request->amount > $maxBid) {
-            return response()->json(['error' => 'Bid exceeds maximum allowed budget constraint.'], 400);
+            return response()->json(['error' => "Bid exceeds maximum allowed amount for your team. Maximum bid: Rs. {$maxBid}."], 400);
         }
 
         $currentBidData = Cache::get($this->highestBidKey($auction));
@@ -413,6 +417,29 @@ class LiveAuctionController extends Controller
         $auctionPlayer = AuctionPlayer::findOrFail($currentPlayerData['auction_player_id']);
         $team = Team::findOrFail($currentBidData['team_id']);
 
+        $basePrice = (float) $currentPlayerData['base_price'];
+        $bidAmount = (float) $currentBidData['amount'];
+
+        if ($bidAmount < $basePrice) {
+            return response()->json([
+                'error' => "Cannot sell player. Bid amount (Rs. {$bidAmount}) is less than the base price (Rs. {$basePrice})."
+            ], 400);
+        }
+
+        $teamPlayerCount = AuctionPlayer::where('auction_id', $auction->id)
+            ->where('team_id', $team->id)
+            ->where('status', 'sold')
+            ->count();
+
+        if ($teamPlayerCount >= $auction->max_players) {
+            return response()->json(['error' => 'This team already has the maximum number of players.'], 400);
+        }
+
+        $maxBid = $this->maxBidForTeam($auction, $team);
+        if ($bidAmount > $maxBid) {
+            return response()->json(['error' => "Cannot sell player. Bid exceeds this team's maximum allowed amount of Rs. {$maxBid}."], 400);
+        }
+
         $auctionPlayer->update([
             'status' => 'sold',
             'sold_price' => $currentBidData['amount'],
@@ -447,6 +474,7 @@ class LiveAuctionController extends Controller
         })->afterResponse();
 
         $msg = "{$currentPlayerData['name']} SOLD to {$team->name} for Rs. {$currentBidData['amount']}";
+
         broadcast(new \App\Events\PlayerSold($auction->id, $msg))->toOthers();
 
         return response()->json(['success' => true, 'message' => $msg]);
@@ -521,22 +549,20 @@ class LiveAuctionController extends Controller
             ->where('status', 'sold')
             ->count();
 
-        if ($soldCount >= $auction->max_players) {
-            return 0;
-        }
-
         $spent = (float) AuctionPlayer::where('auction_id', $auction->id)
             ->where('team_id', $team->id)
             ->where('status', 'sold')
             ->sum('sold_price');
 
-        $remaining = max(0, (float) $auction->budget - $spent);
-        $playersStillNeededAfterNext = max(0, $auction->min_players - $soldCount - 1);
-        $lowestBasePrice = (float) (AuctionPlayer::where('auction_id', $auction->id)
-            ->where('status', 'pending')
-            ->min('base_price') ?? 0);
+        if ($soldCount >= $auction->max_players) {
+            return 0;
+        }
 
-        return max(0, $remaining - ($playersStillNeededAfterNext * $lowestBasePrice));
+        $remaining = max(0, (float) $auction->budget - $spent);
+        $playersStillNeededAfterNext = max(0, $auction->max_players - $soldCount - 1);
+        $reservedForRequiredPlayers = $playersStillNeededAfterNext * (float) $auction->min_amount;
+
+        return max(0, $remaining - $reservedForRequiredPlayers);
     }
 
     private function currentPlayerKey(Auction $auction): string

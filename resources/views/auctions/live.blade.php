@@ -612,7 +612,10 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                         </div>
                     </div>
                     @if($isOwner)
-                        <button type="button" class="btn btn-primary" onclick="spinPlayer()" {{ $auction->status !== 'live' ? 'disabled' : '' }}>Spin Random Player</button>
+                        <div style="display: flex; gap: 0.65rem; justify-content: center; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-primary" onclick="spinPlayer()" {{ $auction->status !== 'live' ? 'disabled' : '' }}>Spin Random Player</button>
+                            <button type="button" class="btn" onclick="markCurrentPlayerUnsold()" {{ !$currentPlayer || $auction->status !== 'live' ? 'disabled' : '' }} style="background: rgba(239, 68, 68, 0.14); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">Unsold</button>
+                        </div>
                     @endif
                     @if($auction->status !== 'live')
                         <p style="margin-top: 1rem;">Start the auction to enable spinning.</p>
@@ -652,86 +655,8 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                 </div>
             </div>
 
-            
-            
             <script>
-            // Show IPL-style auction player card
-            function showSelectedPlayerModal(player) {
-                console.log('showSelectedPlayerModal called with:', player);
-                const modal = document.getElementById('selected-player-modal');
-                
-                console.log('Modal element:', modal);
-                
-                if (!modal) {
-                    console.error('Modal not found!');
-                    return;
-                }
-                
-                // Store modal state in localStorage
-                localStorage.setItem('auctionModalOpen', 'true');
-                localStorage.setItem('currentPlayerId', player.id || player.auction_player_id);
-                localStorage.setItem('currentPlayerStatus', player.status || 'pending');
-                // Store complete player data for restoration
-                localStorage.setItem('currentPlayerData', JSON.stringify(player));
-                
-                // Reset status sections
-                document.getElementById('sold-status').style.display = 'none';
-                document.getElementById('sold-price-section').style.display = 'none';
-                
-                // Show modal
-                modal.style.display = 'block';
-                console.log('Modal display set to block');
-                
-                // Avatar (larger for IPL style)
-                var avatarDiv = document.getElementById('selected-player-avatar');
-                if (player.avatar) {
-                    avatarDiv.innerHTML = '<img src="' + player.avatar + '" alt="' + player.name + '" style="width:100%;height:100%;object-fit:cover;">';
-                } else {
-                    avatarDiv.innerHTML = '<span>' + (player.name ? player.name.substring(0,2).toUpperCase() : '?') + '</span>';
-                }
-                
-                // Name and role (uppercase for IPL style)
-                document.getElementById('selected-player-modal-name').textContent = (player.name || 'UNKNOWN PLAYER').toUpperCase();
-                document.getElementById('selected-player-modal-role').textContent = (player.specialization || 'ALL-ROUNDER').toUpperCase();
-                
-                // Base Price with Indian Rupee symbol
-                const price = player.base_price ? player.base_price.toLocaleString('en-IN') : '0';
-                document.getElementById('selected-player-modal-price').textContent = '₹' + price;
-                
-                // Start polling for player status changes
-                startPollingForPlayerStatus();
-            }
-
-            // Hide modal with animation
-            function hideSelectedPlayerModal(clearLocalStorage = true) {
-                const modal = document.getElementById('selected-player-modal');
-                
-                // Clear localStorage only when specified (e.g., when status changes)
-                if (clearLocalStorage) {
-                    localStorage.removeItem('auctionModalOpen');
-                    localStorage.removeItem('currentPlayerId');
-                    localStorage.removeItem('currentPlayerStatus');
-                    localStorage.removeItem('currentPlayerData');
-                }
-                
-                // Stop polling when modal is hidden
-                if (pollInterval) {
-                    clearInterval(pollInterval);
-                    pollInterval = null;
-                }
-                
-                if (modal) {
-                    // Add hiding animation
-                    modal.classList.add('modal-hiding');
-                    
-                    setTimeout(() => {
-                        modal.style.display = 'none';
-                        modal.classList.remove('modal-hiding');
-                    }, 300);
-                }
-            }
-
-            // Enhanced spinPlayer with better transition to modal
+            // Spin player functionality
             window.spinPlayer = function() {
                 console.log('spinPlayer function called');
                 var spinWheel = document.getElementById('spin-wheel');
@@ -779,13 +704,11 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                         spinWheel.classList.remove('is-spinning');
                         
                         if (data && data.id) {
-                            console.log('Showing modal for player:', data);
+                            console.log('Player selected:', data);
                             // Update wheel display
                             document.getElementById('selected-player-name').innerText = data.name;
                             document.getElementById('selected-player-price').innerText = `Rs. ${Number(data.base_price).toLocaleString()}`;
-                            
-                            // Show the enhanced modal
-                            showSelectedPlayerModal(data);
+                            setAuctionActionButtons({ hasPlayer: true, hasBid: false });
                             
                             // Update assign player select if available
                             const $ap = window.jQuery && window.jQuery('#assign-player-select');
@@ -816,321 +739,98 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                 });
             };
 
-            // Enhanced polling for player selection and status changes
-            let pollInterval = null;
-            let currentModalPlayer = null;
-            
-            function startPollingForPlayerStatus() {
-                // Clear any existing interval
-                if (pollInterval) {
-                    clearInterval(pollInterval);
+            function setAuctionActionButtons({ hasPlayer, hasBid }) {
+                const sellButton = document.querySelector('button[onclick="sellCurrentPlayer()"]');
+                const unsoldButton = document.querySelector('button[onclick="markCurrentPlayerUnsold()"]');
+
+                if (sellButton) {
+                    sellButton.disabled = !hasPlayer || !hasBid;
                 }
-                
-                // Start polling every 1.5 seconds for real-time updates
-                pollInterval = setInterval(function() {
-                    console.log('Polling for current player...');
-                    fetch(window.location.href + '?ajax=currentPlayer', {
-                        headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => {
-                        console.log('Polling response status:', response.status);
-                        if (!response.ok) {
-                            throw new Error('Failed to check player status');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Polling response data:', data);
-                        const modal = document.getElementById('selected-player-modal');
-                        
-                        // Log user team information for debugging
-                        if (data.userTeam) {
-                            console.log('User team info:', data.userTeam);
-                        } else {
-                            console.log('User is not assigned to any team');
-                        }
-                        
-                        // Check if wheel was spun and database confirms player has pending status
-                        if (data.currentPlayer) {
-                            console.log('Database confirms wheel was spun, current player:', data.currentPlayer.name);
-                            // Get stored status from localStorage
-                            const storedStatus = localStorage.getItem('currentPlayerStatus');
-                            const storedPlayerId = localStorage.getItem('currentPlayerId');
-                            const modalOpen = localStorage.getItem('auctionModalOpen');
-                            
-                            // Show modal for ALL users when database confirms player has pending status
-                            if (data.currentPlayer.status === 'pending' && modal.style.display !== 'block') {
-                                console.log('Database confirms player has pending status, showing modal for ALL users');
-                                showSelectedPlayerModal(data.currentPlayer);
-                                
-                                // Update localStorage for this user
-                                localStorage.setItem('auctionModalOpen', 'true');
-                                localStorage.setItem('currentPlayerId', data.currentPlayer.id);
-                                localStorage.setItem('currentPlayerStatus', 'pending');
-                                localStorage.setItem('currentPlayerData', JSON.stringify(data.currentPlayer));
-                            }
-                            
-                            // Check if player status changed from pending to sold/unsold
-                            if (storedStatus === 'pending' && data.currentPlayer.status !== 'pending') {
-                                console.log('Player status changed from pending to:', data.currentPlayer.status);
-                                // Player was sold or unsold - show notification and close modal
-                                showStatusChangeNotification(data.currentPlayer);
-                                // Stop polling - modal will be closed by the notification function
-                                clearInterval(pollInterval);
-                                pollInterval = null;
-                            } else if (data.currentPlayer.status === 'pending') {
-                                // Update stored status if still pending
-                                localStorage.setItem('currentPlayerStatus', 'pending');
-                            }
-                        } else {
-                            console.log('Database shows no current player with pending status - wheel not spun or player status changed');
-                            // This means no player is currently selected with pending status in database
-                            // Don't immediately close modal, check if we had a pending player recently
-                            const storedStatus = localStorage.getItem('currentPlayerStatus');
-                            const modalOpen = localStorage.getItem('auctionModalOpen');
-                            
-                            if (storedStatus === 'pending' && modalOpen === 'true') {
-                                console.log('No current player data, but we had a pending player - waiting to see if status changed...');
-                                // Wait a bit and check again before closing
-                                setTimeout(() => {
-                                    fetch(window.location.href + '?ajax=currentPlayer', {
-                                        headers: {
-                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                            'Accept': 'application/json'
-                                        }
-                                    })
-                                    .then(response => response.json())
-                                    .then(recheckData => {
-                                        if (!recheckData.currentPlayer) {
-                                            console.log('Confirmed no current player, closing modal');
-                                            hideSelectedPlayerModal(true); // Clear localStorage since no current player
-                                        } else if (recheckData.currentPlayer.status !== 'pending') {
-                                            console.log('Player status changed to:', recheckData.currentPlayer.status);
-                                            showStatusChangeNotification(recheckData.currentPlayer);
-                                            // Stop polling - modal will be closed by the notification function
-                                            clearInterval(pollInterval);
-                                            pollInterval = null;
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error('Error rechecking player status:', error);
-                                    });
-                                }, 2000); // Wait 2 seconds before rechecking
-                            } else {
-                                // No stored pending status, ensure modal is closed
-                                if (modal.style.display === 'block') {
-                                    hideSelectedPlayerModal(true); // Clear localStorage since no pending status
-                                }
-                                clearInterval(pollInterval);
-                                pollInterval = null;
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error checking player status:', error);
-                        // Don't stop polling on network errors, but log them
-                    });
-                }, 1500);
+                if (unsoldButton) {
+                    unsoldButton.disabled = !hasPlayer;
+                }
             }
-            
-            // Check and restore modal state on page load
-            function checkAndRestoreModalState() {
-                console.log('Checking modal state on page load...');
-                
-                // First check if we have localStorage indicating modal should be open
-                const storedModalOpen = localStorage.getItem('auctionModalOpen');
-                const storedPlayerId = localStorage.getItem('currentPlayerId');
-                const storedStatus = localStorage.getItem('currentPlayerStatus');
-                const storedPlayerData = localStorage.getItem('currentPlayerData');
-                
-                console.log('Stored state - modalOpen:', storedModalOpen, 'playerId:', storedPlayerId, 'status:', storedStatus);
-                
-                // Only show modal if we have stored state AND it was created after a spin (not just page load)
-                // The key difference: we only show modal immediately if we previously had a spun player
-                if (storedModalOpen === 'true' && storedStatus === 'pending' && storedPlayerId && storedPlayerData) {
-                    console.log('Found stored pending state from previous spin, showing modal immediately');
-                    let storedPlayer;
-                    try {
-                        // Use complete stored player data (only available after spin)
-                        storedPlayer = JSON.parse(storedPlayerData);
-                        // Additional validation: ensure this looks like real spun player data
-                        if (storedPlayer && storedPlayer.name && storedPlayer.name !== 'Loading...') {
-                            console.log('Valid stored player data found, showing modal');
-                            showSelectedPlayerModal(storedPlayer);
-                        } else {
-                            console.log('Stored player data incomplete, waiting for server check');
-                        }
-                    } catch (e) {
-                        console.log('Error parsing stored player data, waiting for server check');
-                    }
-                }
-                
-                // Always check if there's a current player with pending status, regardless of localStorage
+
+            @if($isOwner)
+            function syncCurrentAuctionState() {
                 fetch(window.location.href + '?ajax=currentPlayer', {
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.ok ? response.json() : null)
+                .then(data => {
+                    if (!data) return;
+
+                    setAuctionActionButtons({
+                        hasPlayer: Boolean(data.currentPlayer),
+                        hasBid: Boolean(data.highestBid)
+                    });
+                })
+                .catch(error => console.error('Current auction state sync failed:', error));
+            }
+
+            @if($auction->status === 'live')
+            syncCurrentAuctionState();
+            setInterval(syncCurrentAuctionState, 2500);
+            @endif
+            @endif
+
+            function postAuctionAction(url, fallbackMessage) {
+                return fetch(url, {
+                    method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
                     }
                 })
-                .then(response => {
-                    console.log('AJAX response status:', response.status);
-                    if (!response.ok) {
-                        throw new Error('AJAX response not ok: ' + response.status);
+                .then(async response => {
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok || data.error) {
+                        throw new Error(data.error || data.message || fallbackMessage);
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Immediate check on page load - data:', data);
-                    
-                    // Log user team information for debugging
-                    if (data.userTeam) {
-                        console.log('User is assigned to team:', data.userTeam.name);
-                    } else {
-                        console.log('User is not assigned to any team - should not see modal');
-                    }
-                    
-                    // Show modal ONLY if there's a current player (wheel was spun) with pending status from database
-                    if (data.currentPlayer && data.currentPlayer.status === 'pending') {
-                        console.log('Database confirms player has pending status, showing modal on page load');
-                        showSelectedPlayerModal(data.currentPlayer); // This will update the modal with real data
-                        
-                        // Update localStorage to reflect current state
-                        localStorage.setItem('auctionModalOpen', 'true');
-                        localStorage.setItem('currentPlayerId', data.currentPlayer.id);
-                        localStorage.setItem('currentPlayerStatus', 'pending');
-                        localStorage.setItem('currentPlayerData', JSON.stringify(data.currentPlayer));
-                    } else {
-                        console.log('Database shows no player with pending status, data:', data);
-                        // If we had shown modal from stored state, hide it now since DB confirms no pending player
-                        if (storedModalOpen === 'true' && storedStatus === 'pending') {
-                            console.log('Database confirms no pending player, but we had stored state - hiding modal');
-                            hideSelectedPlayerModal(true); // Clear localStorage since database confirms no pending player
-                        } else {
-                            console.log('No stored pending state, ensuring modal is closed');
-                            // Ensure modal is closed and clear localStorage
-                            hideSelectedPlayerModal(true); // Clear localStorage since no pending player
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error checking modal state on load:', error);
-                    // If we had stored state, preserve the modal and retry
-                    if (storedModalOpen === 'true' && storedStatus === 'pending') {
-                        console.log('AJAX failed but had stored pending state - preserving modal and retrying');
-                        // Don't hide the modal, just retry the check
-                        setTimeout(() => {
-                            checkAndRestoreModalState();
-                        }, 3000);
-                    } else {
-                        console.log('AJAX failed and no stored pending state - ensuring modal closed');
-                        hideSelectedPlayerModal(true);
-                    }
+                    return data;
                 });
             }
 
-            // Start polling on page load to check for existing selected player
-            document.addEventListener('DOMContentLoaded', function() {
-                checkAndRestoreModalState();
-                startPollingForPlayerStatus();
-            });
-            
-            // Update modal when player is sold
-            function updateModalForSoldPlayer(player) {
-                // Show sold status
-                document.getElementById('sold-status').style.display = 'block';
-                document.getElementById('sold-price-section').style.display = 'block';
-                
-                // Update sold price
-                const soldPrice = player.sold_price ? player.sold_price.toLocaleString('en-IN') : '0';
-                document.getElementById('selected-player-sold-price').textContent = '₹' + soldPrice;
-                
-                // Update team info
-                const teamName = player.team_name || 'UNKNOWN TEAM';
-                document.getElementById('team-name').textContent = teamName.toUpperCase();
-                
-                // Update team logo (use first letter of team name)
-                const teamLogo = document.getElementById('team-logo');
-                teamLogo.textContent = teamName.charAt(0).toUpperCase();
-                
-                // Add celebration effect
-                const modal = document.getElementById('selected-player-modal');
-                modal.style.borderColor = '#2ecc71';
-                modal.style.boxShadow = '0 20px 60px rgba(46,204,113,0.5)';
-                
-                // Auto-hide after 3 seconds
-                setTimeout(() => {
-                    hideSelectedPlayerModal(true); // Clear localStorage since player was sold
-                }, 3000);
-            }
-            
-            // Show notification when player status changes
-            function showStatusChangeNotification(player) {
-                if (player.status === 'sold') {
-                    // Update the modal instead of showing notification
-                    updateModalForSoldPlayer(player);
-                } else if (player.status === 'unsold') {
-                    // Show unsold notification
-                    const notification = document.createElement('div');
-                    notification.style.cssText = `
-                        position: fixed;
-                        top: 20px;
-                        right: 20px;
-                        background: linear-gradient(135deg, #1a1a2e, #16213e);
-                        border: 2px solid #e94560;
-                        padding: 1rem 1.5rem;
-                        border-radius: 8px;
-                        box-shadow: 0 10px 30px rgba(233,69,96,0.3);
-                        z-index: 10000;
-                        animation: slideInRight 0.5s ease;
-                        max-width: 350px;
-                        color: white;
-                    `;
-                    
-                    notification.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 0.8rem;">
-                            <div style="width: 8px; height: 8px; background: #e94560; border-radius: 50%; animation: pulse 1s ease-in-out infinite;"></div>
-                            <div>
-                                <div style="font-weight: 700; color: #ffffff; margin-bottom: 0.2rem;">${player.name.toUpperCase()}</div>
-                                <div style="font-size: 0.85rem; color: #f39c12;">MARKED AS UNSOLD</div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    document.body.appendChild(notification);
-                    
-                    // Remove notification after 3 seconds
-                    setTimeout(() => {
-                        notification.style.animation = 'slideOutRight 0.5s ease forwards';
-                        setTimeout(() => {
-                            if (notification.parentNode) {
-                                notification.parentNode.removeChild(notification);
-                            }
-                        }, 500);
-                    }, 3000);
-                    
-                    // Hide modal after showing notification
-                    setTimeout(() => {
-                        hideSelectedPlayerModal(true); // Clear localStorage since player was unsold
-                    }, 1000);
-                }
-            }
-            
-            // Add slide animations for notifications
-            const styleSheet = document.createElement('style');
-            styleSheet.textContent = `
-                @keyframes slideInRight {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-                @keyframes slideOutRight {
-                    from { transform: translateX(0); opacity: 1; }
-                    to { transform: translateX(100%); opacity: 0; }
-                }
-            `;
-            document.head.appendChild(styleSheet);
+            window.sellCurrentPlayer = function() {
+                postAuctionAction('{{ route('auctions.sell', $auction) }}', 'Unable to sell player.')
+                    .then(data => {
+                        if (window.modalSystem && typeof window.modalSystem.info === 'function') {
+                            window.modalSystem.info(data.message || 'Player sold.');
+                        }
+                        setAuctionActionButtons({ hasPlayer: false, hasBid: false });
+                        setTimeout(() => window.location.reload(), 800);
+                    })
+                    .catch(error => {
+                        if (window.modalSystem && typeof window.modalSystem.error === 'function') {
+                            window.modalSystem.error(error.message);
+                        } else {
+                            alert(error.message);
+                        }
+                    });
+            };
+
+            window.markCurrentPlayerUnsold = function() {
+                postAuctionAction('{{ route('auctions.unsold', $auction) }}', 'Unable to mark player unsold.')
+                    .then(data => {
+                        if (window.modalSystem && typeof window.modalSystem.info === 'function') {
+                            window.modalSystem.info(data.message || 'Player marked unsold.');
+                        }
+                        setAuctionActionButtons({ hasPlayer: false, hasBid: false });
+                        setTimeout(() => window.location.reload(), 800);
+                    })
+                    .catch(error => {
+                        if (window.modalSystem && typeof window.modalSystem.error === 'function') {
+                            window.modalSystem.error(error.message);
+                        } else {
+                            alert(error.message);
+                        }
+                    });
+            };
+
             </script>
         </div>
         @if($isOwner)
@@ -1169,104 +869,8 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
 </div>
 
 <style>
-@keyframes slideUp {
-    0% { 
-        transform: translate(-50%, -40%) scale(0.9); 
-        opacity: 0; 
-        filter: blur(10px);
-    }
-    100% { 
-        transform: translate(-50%, -50%) scale(1); 
-        opacity: 1; 
-        filter: blur(0px);
-    }
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(1.2); }
-}
-
-@keyframes slideOut {
-    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -60%) scale(0.8); }
-}
-
-@keyframes glow {
-    0%, 100% { box-shadow: 0 10px 30px rgba(233,69,96,0.3); }
-    50% { box-shadow: 0 15px 40px rgba(233,69,96,0.5); }
-}
-
-.modal-hiding {
-    animation: slideOut 0.4s ease-out forwards;
-}
-
-/* Avatar glow effect */
-#selected-player-avatar {
-    animation: glow 2s ease-in-out infinite;
-}
-
-/* Card border glow */
-#selected-player-modal {
-    animation: slideUp 0.5s ease-out, glow 3s ease-in-out infinite;
-}
 </style>
 
-<!-- IPL Style Auction Player Card - Available to ALL users -->
-<div id="selected-player-modal" style="display:none; position:fixed; z-index:9999; top:50%; left:50%; transform:translate(-50%, -50%); background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); padding: 0; width: 380px; animation: slideUp 0.5s ease-out; border: 2px solid #e94560;">
-                
-                <!-- Auction Header -->
-                <div style="background: linear-gradient(135deg, #e94560, #0f3460); padding: 15px; border-radius: 12px 12px 0 0; text-align:center; border-bottom: 3px solid #f39c12;">
-                    <div style="font-size: 0.7rem; color: #ffffff; text-transform: uppercase; font-weight: 800; letter-spacing: 2px; margin-bottom: 5px;">{{ $auction->name ?? 'AUCTION' }}</div>
-                    <div style="font-size: 0.9rem; color: #f39c12; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">LIVE AUCTION</div>
-                </div>
-                
-                <!-- Player Photo Section -->
-                <div style="padding: 20px; text-align:center; background: linear-gradient(to bottom, #0f3460, #1a1a2e);">
-                    <div id="selected-player-avatar" style="width: 150px; height: 180px; margin: 0 auto 15px auto; border-radius: 8px; overflow: hidden; background: linear-gradient(135deg, #2d3561, #0f3460); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #e94560; font-weight: 900; border: 3px solid #f39c12; box-shadow: 0 10px 30px rgba(233,69,96,0.3);">
-                        <!-- Player photo will be inserted here -->
-                    </div>
-                    
-                    <!-- Player Name -->
-                    <div id="selected-player-modal-name" style="font-size: 1.8rem; font-weight: 900; color: #ffffff; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"></div>
-                    
-                    <!-- Player Role -->
-                    <div id="selected-player-modal-role" style="font-size: 1rem; color: #f39c12; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;"></div>
-                </div>
-                
-                <!-- Price Section -->
-                <div style="padding: 0 20px;">
-                    <!-- Base Price -->
-                    <div style="background: rgba(243,156,18,0.1); border: 1px solid #f39c12; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
-                        <div style="font-size: 0.8rem; color: #f39c12; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 5px;">Base Price</div>
-                        <div id="selected-player-modal-price" style="font-size: 1.5rem; font-weight: 900; color: #ffffff;">₹0</div>
-                    </div>
-                    
-                    <!-- Sold Price (Initially Hidden) -->
-                    <div id="sold-price-section" style="background: rgba(46,204,113,0.1); border: 1px solid #2ecc71; border-radius: 8px; padding: 12px; margin-bottom: 15px; display: none;">
-                        <div style="font-size: 0.8rem; color: #2ecc71; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 5px;">Sold Price</div>
-                        <div id="selected-player-sold-price" style="font-size: 1.5rem; font-weight: 900; color: #ffffff;">₹0</div>
-                    </div>
-                </div>
-                
-                <!-- Status Section -->
-                <div style="padding: 0 20px 20px 20px;">
-                    <!-- Sold Status (Initially Hidden) -->
-                    <div id="sold-status" style="background: rgba(46,204,113,0.1); border: 1px solid #2ecc71; border-radius: 8px; padding: 15px; display: none;">
-                        <div style="text-align:center; margin-bottom: 10px;">
-                            <div style="font-size: 0.8rem; color: #2ecc71; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">SOLD TO</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <div id="team-logo" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #2ecc71, #27ae60); display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 1.2rem;">
-                                <!-- Team logo will be inserted here -->
-                            </div>
-                            <div id="team-name" style="flex: 1; font-size: 1.1rem; font-weight: 700; color: #ffffff; text-transform: uppercase; letter-spacing: 1px;">
-                                <!-- Team name will be inserted here -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.full.min.js" crossorigin="anonymous"></script>

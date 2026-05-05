@@ -1,4 +1,7 @@
 <div class="player-card" data-player-id="{{ $player->id }}">
+    @php
+        $maxBasePrice = (int) $auction->max_players > 0 ? (float) $auction->budget / (int) $auction->max_players : 0;
+    @endphp
     <div class="flex items-start gap-4">
         <div class="player-avatar">
             @if($player->avatar)
@@ -40,7 +43,7 @@
                 <form action="{{ route('auctions.pool.store', $auction) }}" method="POST" class="flex gap-2" onsubmit="event.preventDefault(); handleFormSubmit(this); return false;">
                     @csrf
                     <input type="hidden" name="player_id" value="{{ $player->id }}">
-                    <input type="number" name="base_price" class="price-input" placeholder="Base Price" required min="1" step="1000">
+                    <input type="number" name="base_price" class="price-input" placeholder="Base Price" required min="1" step="any" title="Maximum base price: Rs. {{ number_format($maxBasePrice, 2) }}">
                     <button type="submit" class="btn btn-accent px-6 py-3 text-white font-semibold rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden group" style="background: linear-gradient(135deg, #667eea, #764ba2);">
                         <span class="relative z-10">Add to Pool</span>
                         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-all duration-700"></div>

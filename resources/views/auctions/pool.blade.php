@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $maxBasePrice = $maxBasePrice ?? ((int) $auction->max_players > 0 ? (float) $auction->budget / (int) $auction->max_players : 0);
+@endphp
 <style>
 .player-card {
     background: linear-gradient(145deg, color-mix(in srgb, var(--card-bg) 92%, #ffffff 8%), color-mix(in srgb, var(--card-bg) 96%, transparent));
@@ -689,6 +692,7 @@ body.light-theme .pagination-items {
         <div>
             <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Manage Player Pool: {{ $auction->name }}</h2>
             <p class="text-gray-400 mt-1">Add players to the auction and set their base prices.</p>
+            <p class="text-gray-400 mt-1">Maximum base price per player: <strong>Rs. {{ number_format($maxBasePrice, 2) }}</strong></p>
         </div>
         <div class="flex gap-3">
             <button onclick="createAuction()" class="btn bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
@@ -761,7 +765,7 @@ body.light-theme .pagination-items {
                                 <form action="{{ route('auctions.pool.store', $auction) }}" method="POST" class="flex gap-2 pool-form">
                                     @csrf
                                     <input type="hidden" name="player_id" value="{{ $player->id }}">
-                                    <input type="number" name="base_price" class="price-input" placeholder="Base Price" required min="1" >
+                                    <input type="number" name="base_price" class="price-input" placeholder="Base Price" required min="1" step="any" title="Maximum base price: Rs. {{ number_format($maxBasePrice, 2) }}">
                                     <button type="submit" class="btn btn-accent px-6 py-3 text-white font-semibold rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden group" style="background: linear-gradient(135deg, #667eea, #764ba2);">
                                         <span class="relative z-10">Add to Pool</span>
                                         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-all duration-700"></div>
@@ -830,6 +834,8 @@ body.light-theme .pagination-items {
 </div>
 
 <script>
+const maxBasePrice = {{ json_encode($maxBasePrice) }};
+
 // Create Auction function with enhanced dynamic validation
 function createAuction() {
     // Disable the create button to prevent multiple clicks
@@ -1153,7 +1159,7 @@ function buildAddToPoolForm(playerId, basePrice = '') {
         <form action="{{ route('auctions.pool.store', $auction) }}" method="POST" class="flex gap-2 pool-form" onsubmit="event.preventDefault(); handleFormSubmit(this); return false;">
             @csrf
             <input type="hidden" name="player_id" value="${playerId}">
-            <input type="number" name="base_price" class="price-input" placeholder="Base Price" required min="1" value="${basePrice || ''}">
+            <input type="number" name="base_price" class="price-input" placeholder="Base Price" required min="1" step="any" title="Maximum base price: Rs. ${Number(maxBasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}" value="${basePrice || ''}">
             <button type="submit" class="btn btn-accent px-6 py-3 text-white font-semibold rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden group" style="background: linear-gradient(135deg, #667eea, #764ba2);">
                 <span class="relative z-10">Add to Pool</span>
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-all duration-700"></div>
@@ -1291,6 +1297,14 @@ function handleFormSubmit(form) {
     submitButton.innerHTML = '<span class="relative z-10">Adding...</span>';
     
     const formData = new FormData(form);
+    const submittedBasePrice = Number(formData.get('base_price'));
+
+    if (submittedBasePrice > Number(maxBasePrice)) {
+        showNotification(`Base price cannot exceed Rs. ${Number(maxBasePrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}.`, 'error');
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonText;
+        return;
+    }
     
     // Debug: Log form data
     console.log('Submitting form:', form.action);

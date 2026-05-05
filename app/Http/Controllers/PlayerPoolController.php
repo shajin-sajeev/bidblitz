@@ -33,8 +33,9 @@ class PlayerPoolController extends Controller
             ->paginate(10, ['*'], 'pool_page');
 
         $activeTab = $request->get('tab', 'available');
+        $maxBasePrice = $this->maxBasePriceForAuction($auction);
         
-        return view('auctions.pool', compact('auction', 'players', 'pool', 'search', 'activeTab'));
+        return view('auctions.pool', compact('auction', 'players', 'pool', 'search', 'activeTab', 'maxBasePrice'));
     }
 
     public function store(Request $request, \App\Models\Auction $auction)
@@ -59,6 +60,20 @@ class PlayerPoolController extends Controller
                 ], 422);
             }
             return back()->withErrors(['player_id' => 'Max players limit reached for this auction.']);
+        }
+
+        $maxBasePrice = $this->maxBasePriceForAuction($auction);
+        if ((float) $request->base_price > $maxBasePrice) {
+            $message = 'Base price exceeds the maximum allowed for this auction. Maximum base price: Rs. ' . number_format($maxBasePrice, 2) . '.';
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message,
+                ], 422);
+            }
+
+            return back()->withErrors(['base_price' => $message]);
         }
 
         // Check if player is already in the pool
@@ -306,6 +321,15 @@ class PlayerPoolController extends Controller
             default:
                 return "Validation status unknown.";
         }
+    }
+
+    private function maxBasePriceForAuction(\App\Models\Auction $auction): float
+    {
+        if ((int) $auction->max_players <= 0) {
+            return 0;
+        }
+
+        return (float) $auction->budget / (int) $auction->max_players;
     }
 
     public function activateAuction(Request $request, \App\Models\Auction $auction)

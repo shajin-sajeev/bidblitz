@@ -25,6 +25,15 @@ class AuctionController extends Controller
             'min_amount' => 'required|numeric|min:0',
         ]);
 
+        $maxBasePrice = (float) $request->budget / (int) $request->max_players;
+        if ((float) $request->min_amount > $maxBasePrice) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'min_amount' => "Minimum amount is too high for this budget. With {$request->max_players} players and a team budget of Rs. {$request->budget}, the maximum affordable base price is Rs. " . number_format($maxBasePrice, 2) . '.',
+                ]);
+        }
+
         $auction = Auction::create([
             'name' => $request->name,
             'sport' => $request->sport,
