@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/auctions/join', [\App\Http\Controllers\JoinAuctionController::class, 'store'])->name('auctions.join.store');
 
         Route::get('/auctions/joined', [\App\Http\Controllers\AuctionHistoryController::class, 'joined'])->name('auctions.joined');
+        Route::post('/auctions/{auction}/leave', [\App\Http\Controllers\AuctionHistoryController::class, 'leave'])->name('auctions.leave');
         Route::get('/auctions/history', [\App\Http\Controllers\AuctionHistoryController::class, 'index'])->name('auctions.history');
         Route::get('/auctions/{auction}', [\App\Http\Controllers\AuctionHistoryController::class, 'show'])->name('auctions.show');
         Route::get('/auctions/{auction}/statistics', [\App\Http\Controllers\AuctionHistoryController::class, 'statistics'])->name('auctions.statistics');

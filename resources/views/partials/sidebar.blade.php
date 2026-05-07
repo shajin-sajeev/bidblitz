@@ -57,7 +57,7 @@
         <a href="{{ route('auctions.create') }}" class="nav-item {{ request()->routeIs('auctions.create') ? 'active' : '' }}">
             ➕ Create Auction
         </a>
-        <a href="{{ route('auctions.join') }}" class="nav-item {{ request()->routeIs('auctions.join*') ? 'active' : '' }}">
+        <a href="{{ route('auctions.join') }}" class="nav-item {{ request()->routeIs('auctions.join') ? 'active' : '' }}">
             🔗 Join Auction
         </a>
         <a href="{{ route('auctions.joined') }}" class="nav-item {{ request()->routeIs('auctions.joined') ? 'active' : '' }}">

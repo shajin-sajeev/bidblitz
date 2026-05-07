@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Auction;
 use App\Models\Team;
+use App\Models\AuctionParticipant;
 use Illuminate\Http\Request;
 
 class AuctionController extends Controller
@@ -34,6 +35,8 @@ class AuctionController extends Controller
                 ]);
         }
 
+        $currentUserId = auth()->id();
+        
         $auction = Auction::create([
             'name' => $request->name,
             'sport' => $request->sport,
@@ -44,7 +47,7 @@ class AuctionController extends Controller
             'min_amount' => $request->min_amount,
             'auction_pass' => strtoupper(\Illuminate\Support\Str::random(6)),
             'status' => 'pending',
-            'created_by' => auth()->id(),
+            'created_by' => $currentUserId,
         ]);
 
         // Create the teams
@@ -55,6 +58,14 @@ class AuctionController extends Controller
                 'team_pass' => strtoupper(\Illuminate\Support\Str::random(6)),
             ]);
         }
+
+        // Add the auction creator as a participant
+        AuctionParticipant::create([
+            'auction_id' => $auction->id,
+            'user_id' => $currentUserId,
+            'role' => 'creator',
+            'joined_at' => now()
+        ]);
 
         return redirect()->route('auctions.pool', $auction)->with('success', 'Auction created successfully! Now, add players to your auction pool.');
     }

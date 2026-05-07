@@ -42,19 +42,19 @@
             
             <div style="margin-bottom: 1.5rem;">
                 <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Auctions</div>
-                <a href="{{ route('dashboard') }}" class="nav-item active">
+                <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     📊 Overview
                 </a>
-                <a href="{{ route('auctions.create') }}" class="nav-item">
+                <a href="{{ route('auctions.create') }}" class="nav-item {{ request()->routeIs('auctions.create') ? 'active' : '' }}">
                     ➕ Create Auction
                 </a>
-                <a href="{{ route('auctions.join') }}" class="nav-item">
+                <a href="{{ route('auctions.join') }}" class="nav-item {{ request()->routeIs('auctions.join') ? 'active' : '' }}">
                     🔗 Join Auction
                 </a>
-                <a href="{{ route('auctions.joined') }}" class="nav-item">
+                <a href="{{ route('auctions.joined') }}" class="nav-item {{ request()->routeIs('auctions.joined') ? 'active' : '' }}">
                     📋 Joined Auctions
                 </a>
-                <a href="{{ route('auctions.history') }}" class="nav-item">
+                <a href="{{ route('auctions.history') }}" class="nav-item {{ request()->routeIs('auctions.history') ? 'active' : '' }}">
                     📜 Auction History
                 </a>
             </div>
