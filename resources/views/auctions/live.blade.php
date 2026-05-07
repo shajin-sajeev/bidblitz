@@ -487,6 +487,7 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
         </div>
         <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
             <span class="live-status">{{ ucfirst($auction->status) }}</span>
+            <span class="live-status">Viewers: {{ $viewerCount }}</span>
             @if($isOwner && $auction->status === 'active')
                 @if($canStartLive)
                     <form method="POST" action="{{ route('auctions.start', $auction) }}">
@@ -514,6 +515,9 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
         </div>
     </div>
 
+    @if(!$canParticipate)
+        <div class="alert alert-info" style="margin:1rem 0;">You are viewing the auction as a <b>spectator</b>. You cannot participate in bidding or team actions.</div>
+    @endif
     <div class="glass-card" id="live-auction-tabs-card">
         <div class="live-tabs">
             <button type="button" class="live-tab-button active" data-tab="live-summary">Live Summary</button>
@@ -690,12 +694,16 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                         'Accept': 'application/json'
                     } 
                 })
-                .then(response => {
+                .then(async response => {
                     console.log('Fetch response:', response);
+                    const data = await response.json().catch(() => ({}));
                     if (!response.ok) {
-                        throw new Error('Failed to spin player');
+                        const message = response.status === 404
+                            ? (data.message || 'No more players to sell.')
+                            : (data.message || 'Failed to spin player');
+                        throw new Error(message);
                     }
-                    return response.json();
+                    return data;
                 })
                 .then(data => {
                     console.log('Received data:', data);
@@ -718,7 +726,9 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                             syncAssignPrice();
                         } else {
                             console.log('No player selected in response');
-                            alert('No player selected.');
+                            showAuctionNotice('No more players to sell.');
+                            showNoPlayersToSellState();
+                            return;
                         }
                         
                         // Restore button
@@ -730,14 +740,46 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                 })
                 .catch(error => {
                     console.error('Spin error:', error);
-                    alert('Error spinning player. Please try again.');
+                    const message = error.message || 'Error spinning player. Please try again.';
+                    const noPlayersLeft = message.toLowerCase().includes('no players')
+                        || message.toLowerCase().includes('no more players');
+                    if (noPlayersLeft) {
+                        showNoPlayersToSellState();
+                    }
+                    showAuctionNotice(message);
                     spinWheel.classList.remove('is-spinning');
                     if (spinButton) {
-                        spinButton.disabled = false;
-                        spinButton.innerHTML = 'Spin Random Player';
+                        spinButton.disabled = noPlayersLeft;
+                        spinButton.innerHTML = noPlayersLeft ? 'No More Players' : 'Spin Random Player';
                     }
                 });
             };
+
+            function showAuctionNotice(message) {
+                if (window.modalSystem && typeof window.modalSystem.info === 'function') {
+                    window.modalSystem.info(message);
+                } else {
+                    alert(message);
+                }
+            }
+
+            function showNoPlayersToSellState() {
+                const selectedPlayerName = document.getElementById('selected-player-name');
+                const selectedPlayerPrice = document.getElementById('selected-player-price');
+                const spinButton = document.querySelector('button[onclick="spinPlayer()"]');
+
+                if (selectedPlayerName) {
+                    selectedPlayerName.innerText = 'No more players to sell';
+                }
+                if (selectedPlayerPrice) {
+                    selectedPlayerPrice.innerText = '';
+                }
+                if (spinButton) {
+                    spinButton.disabled = true;
+                    spinButton.innerHTML = 'No More Players';
+                }
+                setAuctionActionButtons({ hasPlayer: false, hasBid: false });
+            }
 
             function setAuctionActionButtons({ hasPlayer, hasBid }) {
                 const sellButton = document.querySelector('button[onclick="sellCurrentPlayer()"]');

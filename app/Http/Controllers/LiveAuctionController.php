@@ -18,9 +18,9 @@ class LiveAuctionController extends Controller
 {
     public function index(Auction $auction, Request $request)
     {
+
         $isOwner = $auction->created_by === auth()->id();
         $user = auth()->user();
-
         // Check if user is assigned to a team in this auction (either as owner or team member)
         $userTeam = Team::where('auction_id', $auction->id)
             ->where(function ($q) use ($user) {
@@ -30,14 +30,24 @@ class LiveAuctionController extends Controller
                     });
             })
             ->first();
+        // Allow all authenticated users to view, but restrict participation
+        $canParticipate = $isOwner || $userTeam;
 
-        // Allow access only if user is auction owner or assigned to a team
-        if (!$isOwner && !$userTeam) {
-            if ($request->ajax()) {
-                return response()->json(['error' => 'You are not assigned to any team in this auction.'], 403);
-            }
-            abort(403, 'You are not assigned to any team in this auction.');
+        // Track viewers (authenticated only)
+        $viewersKey = "auction:{$auction->id}:viewers";
+        $viewers = \Cache::get($viewersKey, []);
+        // Do not count the auction owner as a viewer
+        if (!$isOwner) {
+            $viewers[$user->id] = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'profile' => $user->profile_photo_url ?? null,
+                'viewed_at' => now()->toDateTimeString(),
+            ];
+            \Cache::put($viewersKey, $viewers, now()->addMinutes(10));
         }
+        // Exclude owner from viewer count
+        $viewerCount = collect($viewers)->reject(fn($v) => $v['id'] == $auction->created_by)->count();
 
         if ($isOwner && blank($auction->auction_pass)) {
             $auction->forceFill(['auction_pass' => strtoupper(Str::random(6))])->save();
@@ -139,7 +149,9 @@ class LiveAuctionController extends Controller
             'currentPlayer',
             'highestBid',
             'canStartLive',
-            'liveStartProgress'
+            'liveStartProgress',
+            'canParticipate',
+            'viewerCount'
         ));
     }
 
@@ -239,7 +251,7 @@ class LiveAuctionController extends Controller
         }
 
         if (!$auctionPlayer || !$auctionPlayer->player) {
-            return response()->json(['message' => 'No players left to spin.'], 404);
+            return response()->json(['message' => 'No more players to sell.'], 404);
         }
 
         $player = $auctionPlayer->player;
