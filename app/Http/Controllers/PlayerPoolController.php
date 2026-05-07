@@ -13,6 +13,10 @@ class PlayerPoolController extends Controller
             abort(403);
         }
 
+        if ($auction->status === 'completed') {
+            abort(403, 'Cannot manage completed auctions.');
+        }
+
         $search = $request->get('search');
         
         $players = \App\Models\Player::active()
@@ -42,6 +46,10 @@ class PlayerPoolController extends Controller
     {
         if ($auction->created_by !== auth()->id()) {
             abort(403);
+        }
+
+        if ($auction->status === 'completed') {
+            abort(403, 'Cannot manage completed auctions.');
         }
 
         $request->validate([
@@ -165,6 +173,10 @@ class PlayerPoolController extends Controller
             abort(403);
         }
 
+        if ($auction->status === 'completed') {
+            abort(403, 'Cannot manage completed auctions.');
+        }
+
         if ($poolPlayer->auction_id !== $auction->id) {
             abort(404);
         }
@@ -217,6 +229,10 @@ class PlayerPoolController extends Controller
             abort(403);
         }
 
+        if ($auction->status === 'completed') {
+            abort(403, 'Cannot manage completed auctions.');
+        }
+
         $search = $request->get('search', '');
         
         $players = \App\Models\Player::active()
@@ -257,6 +273,13 @@ class PlayerPoolController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'You are not authorized to validate this auction.'
+            ], 403);
+        }
+
+        if ($auction->status === 'completed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot validate completed auctions.'
             ], 403);
         }
 
@@ -342,6 +365,16 @@ class PlayerPoolController extends Controller
                 ], 403);
             }
             abort(403);
+        }
+
+        if ($auction->status === 'completed') {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot activate completed auctions.'
+                ], 403);
+            }
+            abort(403, 'Cannot activate completed auctions.');
         }
 
         // Check if auction is already active

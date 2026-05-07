@@ -106,6 +106,70 @@ class LiveAuctionController extends Controller
             ]);
         }
 
+        // Handle AJAX request for unsold players list
+        if ($request->ajax() && $request->get('ajax') === 'unsoldList') {
+            $unsoldPlayers = AuctionPlayer::where('auction_id', $auction->id)
+                ->where('status', 'unsold')
+                ->with('player')
+                ->orderBy('id')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'name' => $item->player->name ?? 'Unknown Player',
+                        'specialization' => $item->player->specialization ?? 'All-rounder',
+                        'base_price' => (float) $item->base_price,
+                        'avatar' => $item->player->avatar,
+                    ];
+                });
+
+            return response()->json([
+                'unsoldPlayers' => $unsoldPlayers,
+            ]);
+        }
+
+        // Handle AJAX request for summary data
+        if ($request->ajax() && $request->get('ajax') === 'summary') {
+            $auctionPlayers = $auction->auctionPlayers()
+                ->orderByRaw("FIELD(status, 'pending', 'sold', 'unsold')")
+                ->orderBy('id')
+                ->get();
+
+            $summary = [
+                'total' => $auctionPlayers->count(),
+                'pending' => $auctionPlayers->where('status', 'pending')->count(),
+                'sold' => $auctionPlayers->where('status', 'sold')->count(),
+                'unsold' => $auctionPlayers->where('status', 'unsold')->count(),
+                'spent' => $auctionPlayers->where('status', 'sold')->sum('sold_price'),
+            ];
+
+            return response()->json([
+                'summary' => $summary,
+            ]);
+        }
+
+        // Handle AJAX request for assignable players (pending and unsold)
+        if ($request->ajax() && $request->get('ajax') === 'assignablePlayers') {
+            $assignablePlayers = $auction->auctionPlayers()
+                ->whereIn('status', ['pending', 'unsold'])
+                ->with('player')
+                ->orderByRaw("FIELD(status, 'pending', 'unsold')")
+                ->orderBy('id')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'name' => $item->player->name ?? 'Unknown Player',
+                        'base_price' => (float) $item->base_price,
+                        'status' => $item->status,
+                    ];
+                });
+
+            return response()->json([
+                'assignablePlayers' => $assignablePlayers,
+            ]);
+        }
+
         $auction->load([
             'teams.ownerPlayer',
             'teams.players.player',
@@ -304,6 +368,11 @@ class LiveAuctionController extends Controller
 
         if ($auctionPlayer->status === 'sold') {
             return back()->withErrors(['auction_player_id' => 'This player is already sold.']);
+        }
+
+        // Allow both pending and unsold players to be assigned
+        if (!in_array($auctionPlayer->status, ['pending', 'unsold'], true)) {
+            return back()->withErrors(['auction_player_id' => 'This player cannot be assigned.']);
         }
 
         if ($price < (float) $auctionPlayer->base_price) {
@@ -533,6 +602,79 @@ class LiveAuctionController extends Controller
         return response()->json(['success' => true, 'message' => $msg]);
     }
 
+    public function checkPendingStatus(Auction $auction)
+    {
+        $pendingCount = AuctionPlayer::where('auction_id', $auction->id)
+            ->where('status', 'pending')
+            ->count();
+
+        $unsoldCount = AuctionPlayer::where('auction_id', $auction->id)
+            ->where('status', 'unsold')
+            ->count();
+
+        return response()->json([
+            'hasPending' => $pendingCount > 0,
+            'hasUnsold' => $unsoldCount > 0,
+            'pendingCount' => $pendingCount,
+            'unsoldCount' => $unsoldCount,
+        ]);
+    }
+
+    public function spinUnsold(Auction $auction)
+    {
+        if ($auction->created_by !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($auction->status !== 'live') {
+            return response()->json(['message' => 'Start the auction before spinning players.'], 422);
+        }
+
+        // Check if there are any pending players
+        $pendingCount = AuctionPlayer::where('auction_id', $auction->id)
+            ->where('status', 'pending')
+            ->count();
+
+        if ($pendingCount > 0) {
+            return response()->json(['message' => 'Complete all pending players before spinning unsold players.'], 422);
+        }
+
+        // Get a random unsold player
+        $auctionPlayer = AuctionPlayer::where('auction_id', $auction->id)
+            ->where('status', 'unsold')
+            ->with('player')
+            ->inRandomOrder()
+            ->first();
+
+        if (!$auctionPlayer || !$auctionPlayer->player) {
+            return response()->json(['message' => 'No unsold players available.'], 404);
+        }
+
+        // Reset the player status to pending so they can be bid on again
+        AuctionPlayer::where('id', $auctionPlayer->id)
+            ->where('auction_id', $auction->id)
+            ->update(['status' => 'pending']);
+
+        $player = $auctionPlayer->player;
+        $playerData = [
+            'id' => $player->id,
+            'auction_player_id' => $auctionPlayer->id,
+            'name' => $player->name,
+            'role' => $player->specialization ?? 'All-rounder',
+            'base_price' => (float) $auctionPlayer->base_price,
+            'avatar' => $player->avatar,
+            'status' => 'pending', // Now pending for bidding
+            'was_unsold' => true, // Flag to indicate this was previously unsold
+        ];
+
+        Cache::put($this->currentPlayerKey($auction), $playerData, now()->addHours(6));
+        Cache::forget($this->highestBidKey($auction));
+
+        broadcast(new \App\Events\PlayerSelected($auction->id, $playerData))->toOthers();
+
+        return response()->json($playerData);
+    }
+
     private function teamSummaries(Auction $auction)
     {
         return Team::where('auction_id', $auction->id)
@@ -542,6 +684,8 @@ class LiveAuctionController extends Controller
                 $soldPlayers = $team->players->where('status', 'sold')->values();
                 $spent = (float) $soldPlayers->sum('sold_price');
                 $remaining = max(0, (float) $auction->budget - $spent);
+                $playersCount = $soldPlayers->count();
+                $playersLeft = max(0, $auction->max_players - $playersCount);
 
                 return [
                     'id' => $team->id,
@@ -549,7 +693,8 @@ class LiveAuctionController extends Controller
                     'owner' => $team->ownerPlayer?->name ?? 'Owner not assigned',
                     'spent' => $spent,
                     'remaining' => $remaining,
-                    'players_count' => $soldPlayers->count(),
+                    'players_count' => $playersCount,
+                    'players_left' => $playersLeft,
                     'max_bid' => $this->maxBidForTeam($auction, $team),
                     'players' => $soldPlayers->map(fn (AuctionPlayer $item) => [
                         'name' => $item->player?->name ?? 'Unknown Player',
@@ -586,6 +731,98 @@ class LiveAuctionController extends Controller
     private function currentPlayerKey(Auction $auction): string
     {
         return "auction:{$auction->id}:current_player";
+    }
+
+    public function endAuction(Request $request, Auction $auction)
+    {
+        if ($auction->created_by !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($auction->status !== 'live') {
+            $message = 'Only live auctions can be ended.';
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+            
+            return back()->with('warning', $message);
+        }
+
+        // Check if all teams have reached maximum players
+        $canEnd = $this->canEndAuction($auction);
+        
+        if (!$canEnd['can_end']) {
+            $message = $canEnd['message'] ?? 'Auction cannot be ended yet.';
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+            
+            return back()->with('warning', $message);
+        }
+
+        // Update auction status to 'completed'
+        $auction->update(['status' => 'completed']);
+
+        // Clear all auction-related cache
+        Cache::forget($this->currentPlayerKey($auction));
+        Cache::forget($this->highestBidKey($auction));
+
+        $message = 'Auction has been successfully ended.';
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'redirect_url' => route('dashboard'),
+            ]);
+        }
+
+        return redirect()->route('dashboard')->with('success', $message);
+    }
+
+    public function checkEndAuctionStatus(Auction $auction)
+    {
+        $canEnd = $this->canEndAuction($auction);
+        
+        return response()->json($canEnd);
+    }
+
+    private function canEndAuction(Auction $auction): array
+    {
+        $teams = $auction->teams()->with(['players' => function($query) {
+            $query->where('status', 'sold');
+        }])->get();
+
+        $allTeamsFull = true;
+        $teamStatus = [];
+
+        foreach ($teams as $team) {
+            $soldPlayersCount = $team->players->count();
+            $isFull = $soldPlayersCount >= $auction->max_players;
+            
+            $teamStatus[] = [
+                'team_name' => $team->name,
+                'players_count' => $soldPlayersCount,
+                'max_players' => $auction->max_players,
+                'is_full' => $isFull
+            ];
+
+            if (!$isFull) {
+                $allTeamsFull = false;
+            }
+        }
+
+        return [
+            'can_end' => $allTeamsFull,
+            'message' => $allTeamsFull 
+                ? 'All teams have reached their maximum number of players. Auction can be ended.'
+                : 'Not all teams have reached their maximum number of players yet.',
+            'team_status' => $teamStatus,
+            'total_teams' => $teams->count(),
+            'teams_full' => $teams->filter(fn($team) => $team->players->count() >= $auction->max_players)->count()
+        ];
     }
 
     private function highestBidKey(Auction $auction): string

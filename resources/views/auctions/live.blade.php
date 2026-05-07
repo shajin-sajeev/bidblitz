@@ -144,6 +144,19 @@
     border: 1px solid var(--border-color);
 }
 
+.budget-pill.warning {
+    background: color-mix(in srgb, rgba(245, 158, 11, 0.16), transparent);
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.budget-pill.warning span {
+    color: #d97706;
+}
+
+.budget-pill.warning strong {
+    color: #d97706;
+}
+
 .budget-pill span {
     display: block;
     color: var(--text-muted);
@@ -484,7 +497,8 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                     <p class="auction-pass-hint">Others join this auction from Join Auction using this code (team managers use their team pass).</p>
                 </div>
             @endif
-        </div>
+            
+                    </div>
         <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
             <span class="live-status">{{ ucfirst($auction->status) }}</span>
             <span class="live-status">Viewers: {{ $viewerCount }}</span>
@@ -508,6 +522,11 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                         @endif
                     </div>
                 @endif
+            @endif
+            @if($isOwner && $auction->status === 'live')
+                <button type="button" id="end-auction-btn" class="btn" onclick="endAuction()" style="background: rgba(220, 38, 38, 0.14); color: #dc2626; border: 1px solid rgba(220, 38, 38, 0.35); display: none; padding: 0.4rem 0.85rem; font-size: 0.82rem; font-weight: 600;">
+                    <i class="fas fa-stop-circle mr-2"></i>End Auction
+                </button>
             @endif
             @if($isOwner && $auction->status === 'pending')
                 <a href="{{ route('auctions.pool', $auction) }}" class="btn btn-accent">Manage Pool</a>
@@ -537,6 +556,7 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                 <div class="summary-card"><span>Budget / Team</span><strong>Rs. {{ number_format($auction->budget) }}</strong></div>
             </div>
 
+            
             @if($isOwner)
                 <div class="assignment-panel mb-8">
                     <h3>Assign Purchased Player</h3>
@@ -546,8 +566,16 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                             <label class="form-label">Player</label>
                             <select name="auction_player_id" id="assign-player-select" class="js-select2-assign-player" style="width:100%;max-width:100%;" required>
                                 <option value=""></option>
-                                @foreach($auctionPlayers->where('status', 'pending') as $item)
-                                    <option value="{{ $item->id }}" data-base-price="{{ $item->base_price }}">{{ $item->player->name ?? 'Unknown Player' }} - Rs. {{ number_format($item->base_price) }}</option>
+                                @php
+                                    $assignablePlayers = $auctionPlayers->whereIn('status', ['pending', 'unsold']);
+                                @endphp
+                                @foreach($assignablePlayers as $item)
+                                    <option value="{{ $item->id }}" data-base-price="{{ $item->base_price }}">
+                                        {{ $item->player->name ?? 'Unknown Player' }} - Rs. {{ number_format($item->base_price) }}
+                                        @if($item->status === 'unsold') 
+                                            (Unsold) 
+                                        @endif
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -577,12 +605,15 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                                 <h4>{{ $team['name'] }}</h4>
                                 <div class="owner-name">{{ $team['owner'] }}</div>
                             </div>
-                            <span class="status-pill status-sold">{{ $team['players_count'] }} Players</span>
+                            <span class="status-pill status-sold">{{ $team['players_count'] + ($team['players_left'] ?? 0) }} Players</span>
                         </div>
                         <div class="budget-grid">
                             <div class="budget-pill"><span>Spent</span><strong>Rs. {{ number_format($team['spent']) }}</strong></div>
                             <div class="budget-pill"><span>Remaining</span><strong>Rs. {{ number_format($team['remaining']) }}</strong></div>
                             <div class="budget-pill"><span>Max Bid</span><strong>Rs. {{ number_format($team['max_bid']) }}</strong></div>
+                            <div class="budget-pill {{ ($team['players_left'] ?? ($auction->max_players - $team['players_count'])) <= 2 ? 'warning' : '' }}">
+                            <span>Players Left</span><strong>{{ $team['players_left'] ?? ($auction->max_players - $team['players_count']) }}</strong>
+                        </div>
                         </div>
                         <div class="roster-list">
                             @forelse($team['players'] as $player)
@@ -856,13 +887,38 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
             };
 
             window.markCurrentPlayerUnsold = function() {
+                const unsoldButton = event.target || document.querySelector('button[onclick="markCurrentPlayerUnsold()"]');
+                
+                // Disable button and show loading
+                if (unsoldButton) {
+                    unsoldButton.disabled = true;
+                    unsoldButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Marking Unsold...';
+                }
+                
                 postAuctionAction('{{ route('auctions.unsold', $auction) }}', 'Unable to mark player unsold.')
                     .then(data => {
+                        // Update UI instantly without page reload
+                        updatePlayerStatusToUnsold();
+                        updateUnsoldPlayersCount();
+                        removePlayerFromAssignSelect();
+                        
                         if (window.modalSystem && typeof window.modalSystem.info === 'function') {
                             window.modalSystem.info(data.message || 'Player marked unsold.');
                         }
                         setAuctionActionButtons({ hasPlayer: false, hasBid: false });
-                        setTimeout(() => window.location.reload(), 800);
+                        
+                        // Clear wheel display
+                        document.getElementById('selected-player-name').innerText = 'Spin to choose';
+                        document.getElementById('selected-player-price').innerText = '';
+                        
+                        // Restore button
+                        if (unsoldButton) {
+                            unsoldButton.disabled = false;
+                            unsoldButton.innerHTML = 'Unsold';
+                        }
+                        
+                        // Show unsold notification briefly
+                        showUnsoldNotification();
                     })
                     .catch(error => {
                         if (window.modalSystem && typeof window.modalSystem.error === 'function') {
@@ -870,8 +926,562 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                         } else {
                             alert(error.message);
                         }
+                        
+                        // Restore button on error
+                        if (unsoldButton) {
+                            unsoldButton.disabled = false;
+                            unsoldButton.innerHTML = 'Unsold';
+                        }
                     });
             };
+
+            // Unsold Players Management Functions
+            window.toggleUnsoldList = function() {
+                const unsoldList = document.getElementById('unsold-players-list');
+                if (unsoldList) {
+                    const isHidden = unsoldList.style.display === 'none';
+                    unsoldList.style.display = isHidden ? 'block' : 'none';
+                    
+                    // Update button text
+                    const toggleBtn = event.target || document.querySelector('button[onclick="toggleUnsoldList()"]');
+                    if (toggleBtn) {
+                        const icon = isHidden ? 'fa-eye-slash' : 'fa-eye';
+                        toggleBtn.innerHTML = `<i class="fas ${icon} mr-2"></i>${isHidden ? 'Hide' : 'View'} Unsold List`;
+                    }
+                }
+            };
+
+            window.spinUnsoldPlayers = function() {
+                console.log('spinUnsoldPlayers function called');
+                
+                // Check if there are pending players
+                fetch(window.location.href + '?ajax=currentPlayer', {
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Check if there are any pending players
+                    return fetch('{{ route('auctions.check-pending', $auction) }}', {
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    });
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.hasPending) {
+                        if (window.modalSystem && typeof window.modalSystem.warning === 'function') {
+                            window.modalSystem.warning('Please complete all pending players before spinning unsold players.');
+                        } else {
+                            alert('Please complete all pending players before spinning unsold players.');
+                        }
+                        return;
+                    }
+                    
+                    if (!data.hasUnsold) {
+                        if (window.modalSystem && typeof window.modalSystem.info === 'function') {
+                            window.modalSystem.info('No unsold players available for spinning.');
+                        } else {
+                            alert('No unsold players available for spinning.');
+                        }
+                        return;
+                    }
+                    
+                    // Show confirmation dialog
+                    if (window.modalSystem && typeof window.modalSystem.confirm === 'function') {
+                        window.modalSystem.confirm(
+                            `There are ${data.unsoldCount} unsold players. Do you want to start spinning them?`,
+                            () => performUnsoldSpin(),
+                            null,
+                            'Spin Unsold Players'
+                        );
+                    } else if (confirm(`There are ${data.unsoldCount} unsold players. Do you want to start spinning them?`)) {
+                        performUnsoldSpin();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking player status:', error);
+                    if (window.modalSystem && typeof window.modalSystem.error === 'function') {
+                        window.modalSystem.error('Error checking player status. Please try again.');
+                    } else {
+                        alert('Error checking player status. Please try again.');
+                    }
+                });
+            };
+
+            function performUnsoldSpin() {
+                const spinButton = document.getElementById('spin-unsold-btn');
+                const spinWheel = document.getElementById('spin-wheel');
+                
+                // Disable button and show loading
+                if (spinButton) {
+                    spinButton.disabled = true;
+                    spinButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Spinning Unsold...';
+                }
+                
+                // Add spinning animation to wheel
+                if (spinWheel) {
+                    spinWheel.classList.remove('is-spinning');
+                    void spinWheel.offsetWidth; // Force reflow
+                    spinWheel.classList.add('is-spinning');
+                }
+                
+                // Call the spin unsold endpoint
+                fetch('{{ route('auctions.spin.unsold', $auction) }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(async response => {
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Failed to spin unsold player');
+                    }
+                    return data;
+                })
+                .then(data => {
+                    console.log('Unsold player selected:', data);
+                    
+                    // Wait for spinning animation to complete
+                    setTimeout(() => {
+                        if (spinWheel) {
+                            spinWheel.classList.remove('is-spinning');
+                        }
+                        
+                        if (data && data.id) {
+                            // Update wheel display
+                            document.getElementById('selected-player-name').innerText = data.name;
+                            document.getElementById('selected-player-price').innerText = `Rs. ${Number(data.base_price).toLocaleString()}`;
+                            setAuctionActionButtons({ hasPlayer: true, hasBid: false });
+                            
+                            // Update assign player select if available
+                            const $ap = window.jQuery && window.jQuery('#assign-player-select');
+                            if ($ap && $ap.length) {
+                                $ap.val(String(data.auction_player_id)).trigger('change');
+                            }
+                            syncAssignPrice();
+                            
+                            // Show success message
+                            if (window.modalSystem && typeof window.modalSystem.success === 'function') {
+                                window.modalSystem.success(`${data.name} (unsold) is now up for bidding!`);
+                            }
+                        } else {
+                            showAuctionNotice('No more unsold players to spin.');
+                            showNoPlayersToSellState();
+                        }
+                        
+                        // Restore button
+                        if (spinButton) {
+                            spinButton.disabled = false;
+                            spinButton.innerHTML = '<i class="fas fa-redo mr-2"></i>Spin Unsold Players';
+                        }
+                        
+                        // Reload page to update unsold players list
+                        setTimeout(() => window.location.reload(), 2000);
+                    }, 1000); // Match spinning animation duration
+                })
+                .catch(error => {
+                    console.error('Unsold spin error:', error);
+                    const message = error.message || 'Error spinning unsold player. Please try again.';
+                    
+                    if (spinWheel) {
+                        spinWheel.classList.remove('is-spinning');
+                    }
+                    
+                    if (spinButton) {
+                        spinButton.disabled = false;
+                        spinButton.innerHTML = '<i class="fas fa-redo mr-2"></i>Spin Unsold Players';
+                    }
+                    
+                    showAuctionNotice(message);
+                });
+            }
+
+            // Helper Functions for Instant UI Updates
+            function updatePlayerStatusToUnsold() {
+                // Get current player data from cache or wheel display
+                const currentPlayerName = document.getElementById('selected-player-name')?.innerText;
+                const currentPlayerPrice = document.getElementById('selected-player-price')?.innerText;
+                
+                if (currentPlayerName && currentPlayerName !== 'Spin to choose') {
+                    // Find the player in the complete player list and update status
+                    const playerRows = document.querySelectorAll('.player-row');
+                    playerRows.forEach(row => {
+                        const playerNameElement = row.querySelector('h4');
+                        if (playerNameElement && playerNameElement.innerText.trim() === currentPlayerName.trim()) {
+                            const statusPill = row.querySelector('.status-pill');
+                            if (statusPill) {
+                                // Remove existing status classes
+                                statusPill.className = 'status-pill status-unsold';
+                                statusPill.innerText = 'Unsold';
+                            }
+                            
+                            // Add visual indication that this player was just marked unsold
+                            row.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                            setTimeout(() => {
+                                row.style.backgroundColor = '';
+                            }, 2000);
+                        }
+                    });
+                }
+            }
+
+            function updateUnsoldPlayersCount() {
+                // Update unsold players count in the management section
+                const unsoldCountElement = document.querySelector('[data-unsold-count]');
+                if (unsoldCountElement) {
+                    const currentCount = parseInt(unsoldCountElement.innerText) || 0;
+                    unsoldCountElement.innerText = currentCount + 1;
+                }
+                
+                // Update the unsold players list if it's visible
+                refreshUnsoldPlayersList();
+                
+                // Update the main summary if visible
+                updateMainSummary();
+            }
+
+            function removePlayerFromAssignSelect() {
+                // Remove the player from the assign player select dropdown only if they were sold, not unsold
+                const assignSelect = document.getElementById('assign-player-select');
+                if (assignSelect) {
+                    const currentPlayerName = document.getElementById('selected-player-name')?.innerText;
+                    if (currentPlayerName && currentPlayerName !== 'Spin to choose') {
+                        const options = assignSelect.querySelectorAll('option');
+                        options.forEach(option => {
+                            // Only remove if it's the exact player match and doesn't contain "(Unsold)"
+                            if (option.innerText.includes(currentPlayerName.trim()) && !option.innerText.includes('(Unsold)')) {
+                                option.remove();
+                            }
+                        });
+                        
+                        // Reset the select if it was showing this player
+                        if (assignSelect.value && assignSelect.options[assignSelect.selectedIndex]?.innerText.includes(currentPlayerName.trim()) && !assignSelect.options[assignSelect.selectedIndex]?.innerText.includes('(Unsold)')) {
+                            assignSelect.value = '';
+                            syncAssignPrice();
+                        }
+                    }
+                }
+            }
+
+            function refreshUnsoldPlayersList() {
+                // Refresh the unsold players list via AJAX
+                fetch(window.location.href + '?ajax=unsoldList', {
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.unsoldPlayers && data.unsoldPlayers.length > 0) {
+                        updateUnsoldListDisplay(data.unsoldPlayers);
+                    }
+                    // Also update the assign dropdown to reflect current unsold players
+                    updateAssignDropdown();
+                })
+                .catch(error => {
+                    console.log('Failed to refresh unsold list:', error);
+                });
+            }
+
+            function updateAssignDropdown() {
+                // Update the assign player dropdown to include current unsold players
+                fetch(window.location.href + '?ajax=assignablePlayers', {
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.assignablePlayers) {
+                        const assignSelect = document.getElementById('assign-player-select');
+                        if (assignSelect) {
+                            // Clear existing options (except the empty one)
+                            while (assignSelect.options.length > 1) {
+                                assignSelect.remove(1);
+                            }
+                            
+                            // Add updated assignable players
+                            data.assignablePlayers.forEach(player => {
+                                const option = document.createElement('option');
+                                option.value = player.id;
+                                option.setAttribute('data-base-price', player.base_price);
+                                option.textContent = `${player.name} - Rs. ${Number(player.base_price).toLocaleString()}${player.status === 'unsold' ? ' (Unsold)' : ''}`;
+                                assignSelect.appendChild(option);
+                            });
+                            
+                            // Re-initialize Select2 if it exists
+                            if (window.jQuery && window.jQuery.fn.select2) {
+                                window.jQuery(assignSelect).trigger('change');
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.log('Failed to update assign dropdown:', error);
+                });
+            }
+
+            function updateUnsoldListDisplay(unsoldPlayers) {
+                const unsoldListContainer = document.getElementById('unsold-players-list');
+                if (unsoldListContainer) {
+                    const playerList = unsoldListContainer.querySelector('.player-list');
+                    if (playerList) {
+                        // Clear existing list
+                        playerList.innerHTML = '';
+                        
+                        // Add updated unsold players
+                        unsoldPlayers.forEach(player => {
+                            const playerRow = createUnsoldPlayerRow(player);
+                            playerList.appendChild(playerRow);
+                        });
+                        
+                        // Update the heading count
+                        const heading = unsoldListContainer.querySelector('h4');
+                        if (heading) {
+                            heading.innerText = `Unsold Players (${unsoldPlayers.length})`;
+                        }
+                    }
+                }
+            }
+
+            function createUnsoldPlayerRow(player) {
+                const div = document.createElement('div');
+                div.className = 'player-row';
+                div.style.opacity = '0.8';
+                div.setAttribute('data-auction-player-id', player.id);
+                
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="player-avatar" style="width: 40px; height: 40px;">
+                            ${player.avatar ? 
+                                `<img src="${player.avatar}" alt="${player.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` :
+                                `<span style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold; font-size: 0.9rem; background: #e0e7ef; color: #667eea; border-radius: 50%;">
+                                    ${player.name ? player.name.substring(0, 2).toUpperCase() : 'PL'}
+                                </span>`
+                            }
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-size: 0.9rem;">${player.name || 'Unknown Player'}</h4>
+                            <div class="player-meta" style="font-size: 0.75rem;">
+                                ${player.specialization || 'All-rounder'} | Base Rs. ${Number(player.base_price).toLocaleString()}
+                            </div>
+                        </div>
+                    </div>
+                    <span class="status-pill status-unsold" style="font-size: 0.65rem;">Unsold</span>
+                `;
+                
+                return div;
+            }
+
+            function updateMainSummary() {
+                // Update the main summary counts via AJAX
+                fetch(window.location.href + '?ajax=summary', {
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.summary) {
+                        // Update summary cards
+                        const summaryCards = document.querySelectorAll('.summary-card strong');
+                        if (summaryCards.length >= 4) {
+                            summaryCards[1].innerText = data.summary.pending; // Pending count
+                            summaryCards[2].innerText = data.summary.sold;   // Sold count
+                            summaryCards[3].innerText = data.summary.unsold; // Unsold count
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.log('Failed to update summary:', error);
+                });
+            }
+
+            function showUnsoldNotification() {
+                // Show a brief notification that player was marked unsold
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(239, 68, 68, 0.9);
+                    color: white;
+                    padding: 1rem 1.5rem;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    z-index: 9999;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    animation: slideInRight 0.3s ease-out;
+                `;
+                notification.innerHTML = '<i class="fas fa-times-circle mr-2"></i>Player marked as unsold';
+                
+                document.body.appendChild(notification);
+                
+                // Remove after 2 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 2000);
+            }
+
+            // Add CSS animations for notifications
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                
+                @keyframes slideOutRight {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // End Auction functionality
+            window.endAuction = function() {
+                console.log('endAuction function called');
+                
+                // Show confirmation dialog using modal system
+                if (window.modalSystem && typeof window.modalSystem.show === 'function') {
+                    window.modalSystem.show('info', 
+                        'Are you sure you want to end this auction? This action cannot be undone.',
+                        'End Auction',
+                        {
+                            actionCallback: () => performEndAuction(),
+                            actionText: 'End Auction'
+                        }
+                    );
+                } else {
+                    // Fallback to browser confirm if modal system not available
+                    if (confirm('Are you sure you want to end this auction? This action cannot be undone.')) {
+                        performEndAuction();
+                    }
+                }
+            };
+
+            function performEndAuction() {
+                const endButton = document.getElementById('end-auction-btn');
+                
+                // Disable button and show loading
+                if (endButton) {
+                    endButton.disabled = true;
+                    endButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Ending...';
+                }
+                
+                fetch('{{ route('auctions.end', $auction) }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(async response => {
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Failed to end auction');
+                    }
+                    return data;
+                })
+                .then(data => {
+                    console.log('Auction ended successfully:', data);
+                    
+                    if (window.modalSystem && typeof window.modalSystem.success === 'function') {
+                        window.modalSystem.success(data.message || 'Auction ended successfully!');
+                    }
+                    
+                    // Redirect to dashboard after a short delay
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || '{{ route('dashboard') }}';
+                    }, 1500);
+                })
+                .catch(error => {
+                    console.error('End auction error:', error);
+                    const message = error.message || 'Error ending auction. Please try again.';
+                    
+                    // Show error using modal system
+                    if (window.modalSystem && typeof window.modalSystem.error === 'function') {
+                        window.modalSystem.error(message);
+                    } else {
+                        // Fallback to browser alert if modal system not available
+                        alert(message);
+                    }
+                    
+                    // Restore button
+                    if (endButton) {
+                        endButton.disabled = false;
+                        endButton.innerHTML = '<i class="fas fa-stop-circle mr-2"></i>End Auction';
+                    }
+                });
+            }
+
+            // Check if auction can be ended and show/hide button accordingly
+            function checkEndAuctionStatus() {
+                fetch('{{ route('auctions.check-end-status', $auction) }}', {
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const endButton = document.getElementById('end-auction-btn');
+                    if (endButton) {
+                        if (data.can_end) {
+                            endButton.style.display = 'inline-block';
+                            console.log('Auction can be ended - showing End Auction button');
+                        } else {
+                            endButton.style.display = 'none';
+                            console.log('Auction cannot be ended yet - hiding End Auction button');
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking end auction status:', error);
+                });
+            }
+
+            // Check end auction status periodically and on page load
+            @if($isOwner && $auction->status === 'live')
+            document.addEventListener('DOMContentLoaded', function() {
+                checkEndAuctionStatus();
+                // Check every 10 seconds
+                setInterval(checkEndAuctionStatus, 10000);
+            });
+            @endif
 
             </script>
         </div>

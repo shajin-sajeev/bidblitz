@@ -130,7 +130,7 @@
                                 <td style="padding: 1rem;">${{ number_format($auction->budget, 2) }}</td>
                                 <td style="padding: 1rem;">
                                     <div style="display: flex; gap: 0.5rem;">
-                                        @if($auction->created_by === auth()->id())
+                                        @if($auction->created_by === auth()->id() && $auction->status !== 'completed')
                                             <a href="{{ route('auctions.pool', $auction) }}" class="btn" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Manage</a>
                                             @if($auction->status === 'active')
                                                 @if($auction->canStartLive())

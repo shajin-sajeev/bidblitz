@@ -84,8 +84,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/auctions/{auction}/live/teams', [\App\Http\Controllers\LiveAuctionController::class, 'saveTeams'])->name('auctions.live.teams.save');
         Route::post('/auctions/{auction}/live/assign', [\App\Http\Controllers\LiveAuctionController::class, 'assignPlayer'])->name('auctions.live.assign');
         Route::post('/auctions/{auction}/spin', [\App\Http\Controllers\LiveAuctionController::class, 'spin'])->name('auctions.spin');
+        Route::post('/auctions/{auction}/spin/unsold', [\App\Http\Controllers\LiveAuctionController::class, 'spinUnsold'])->name('auctions.spin.unsold');
+        Route::get('/auctions/{auction}/check-pending', [\App\Http\Controllers\LiveAuctionController::class, 'checkPendingStatus'])->name('auctions.check-pending');
         Route::post('/auctions/{auction}/bid', [\App\Http\Controllers\LiveAuctionController::class, 'bid'])->name('auctions.bid');
         Route::post('/auctions/{auction}/sell', [\App\Http\Controllers\LiveAuctionController::class, 'sell'])->name('auctions.sell');
         Route::post('/auctions/{auction}/unsold', [\App\Http\Controllers\LiveAuctionController::class, 'unsold'])->name('auctions.unsold');
+        Route::post('/auctions/{auction}/end', [\App\Http\Controllers\LiveAuctionController::class, 'endAuction'])->name('auctions.end');
+        Route::get('/auctions/{auction}/check-end-status', [\App\Http\Controllers\LiveAuctionController::class, 'checkEndAuctionStatus'])->name('auctions.check-end-status');
     });
 });
