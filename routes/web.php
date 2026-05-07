@@ -11,8 +11,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [\App\Http\Controllers\AuthController::class, 'login'])->name('auth.login');
     Route::get('/register', [\App\Http\Controllers\AuthController::class, 'showRegistrationForm'])->name('auth.register.show');
     Route::post('/register', [\App\Http\Controllers\AuthController::class, 'register'])->name('auth.register');
-    Route::get('/verify', [\App\Http\Controllers\AuthController::class, 'showVerifyForm'])->name('auth.verify.show');
-    Route::post('/verify', [\App\Http\Controllers\AuthController::class, 'verifyOtp'])->name('auth.verify');
 });
 
 Route::middleware('auth')->group(function () {

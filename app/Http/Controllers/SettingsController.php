@@ -23,13 +23,13 @@ class SettingsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|string|unique:users,username,' . Auth::id() . '|max:255',
+            'specialization' => 'required|string|in:Batsman,Bowler,All-rounder,Wicket-keeper',
+            'skills' => 'nullable|string|max:1000',
             'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $user = Auth::user();
         $user->name = $request->name;
-        $user->username = $request->username;
 
         // Handle profile image upload
         if ($request->hasFile('profile_image')) {
@@ -45,6 +45,14 @@ class SettingsController extends Controller
         }
 
         $user->save();
+
+        // Update player profile
+        $playerProfile = \App\Models\Player::where('phone', $user->phone)->first();
+        if ($playerProfile) {
+            $playerProfile->specialization = $request->specialization;
+            $playerProfile->description = $request->skills;
+            $playerProfile->save();
+        }
 
         // Check if this is an AJAX request (for quick upload)
         if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {

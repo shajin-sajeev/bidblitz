@@ -65,12 +65,6 @@
                     � Joined Teams
                 </a>
             </div>
-
-            <div>
-                <a href="{{ route('profile.create') }}" class="nav-item">
-                    ⚙️ Profile Settings
-                </a>
-            </div>
         </div>
     </div>
 

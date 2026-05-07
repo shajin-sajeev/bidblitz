@@ -2,9 +2,8 @@
 
 @section('content')
 <div class="glass-card" style="max-width: 600px; margin: 2rem auto;">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
         <h1>Profile Settings</h1>
-        <a href="{{ route('settings.index') }}" class="btn btn-outline">← Back to Settings</a>
     </div>
 
     <!-- Current Profile Photo -->
@@ -34,7 +33,25 @@
 
         <div class="form-group">
             <label for="username" class="form-label">Username</label>
-            <input type="text" name="username" id="username" class="form-control" value="{{ old('username', $user->username) }}" required>
+            <input type="text" id="username" class="form-control" value="{{ $user->username }}" readonly>
+            <small style="color: var(--text-muted);">Username is unique and cannot be changed</small>
+        </div>
+
+        <div class="form-group">
+            <label for="specialization" class="form-label">Specialization</label>
+            <select name="specialization" id="specialization" class="form-control" required>
+                <option value="">Select Specialization</option>
+                <option value="Batsman" {{ old('specialization', $user->playerProfile->specialization ?? '') == 'Batsman' ? 'selected' : '' }}>Batsman</option>
+                <option value="Bowler" {{ old('specialization', $user->playerProfile->specialization ?? '') == 'Bowler' ? 'selected' : '' }}>Bowler</option>
+                <option value="All-rounder" {{ old('specialization', $user->playerProfile->specialization ?? '') == 'All-rounder' ? 'selected' : '' }}>All-rounder</option>
+                <option value="Wicket-keeper" {{ old('specialization', $user->playerProfile->specialization ?? '') == 'Wicket-keeper' ? 'selected' : '' }}>Wicket-keeper</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="skills" class="form-label">Player Skills</label>
+            <textarea name="skills" id="skills" class="form-control" rows="4" placeholder="Enter your player skills (e.g., Fast bowling, Power hitting, Fielding at covers...)">{{ old('skills', $user->playerProfile->description ?? '') }}</textarea>
+            <small style="color: var(--text-muted);">Describe your key skills and strengths as a player</small>
         </div>
 
         <div class="form-group">

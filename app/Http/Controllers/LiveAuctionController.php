@@ -124,6 +124,11 @@ class LiveAuctionController extends Controller
             ->sortBy('name')
             ->values();
 
+        // Fetch all players for team owner selection
+        $allPlayers = Player::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
         $pendingPlayers = $auctionPlayers->where('status', 'pending')->values();
         $teamSummaries = $this->teamSummaries($auction);
         $currentPlayer = Cache::get($this->currentPlayerKey($auction));
@@ -144,6 +149,7 @@ class LiveAuctionController extends Controller
             'isOwner',
             'auctionPlayers',
             'poolPlayers',
+            'allPlayers',
             'pendingPlayers',
             'teamSummaries',
             'currentPlayer',

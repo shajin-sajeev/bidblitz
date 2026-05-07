@@ -42,9 +42,6 @@
         <a href="{{ route('profile.show') }}" class="btn btn-primary btn-sm">
             👤 View Profile
         </a>
-        <a href="{{ route('settings.profile') }}" class="btn btn-outline btn-sm">
-            ⚙️ Settings
-        </a>
     </div>
 </div>
 
@@ -78,12 +75,7 @@
         </a>
     </div>
 
-    <div>
-        <a href="{{ route('profile.create') }}" class="nav-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-            ⚙️ Profile Settings
-        </a>
     </div>
-</div>
 
 <style>
 .nav-item {

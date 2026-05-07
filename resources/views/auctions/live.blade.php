@@ -893,7 +893,7 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                                     <label class="form-label">Team Owner</label>
                                     <select name="teams[{{ $index }}][owner_player_id]" class="js-select2-team-owner" style="width:100%;max-width:100%;">
                                         <option value="">Choose owner</option>
-                                        @foreach($poolPlayers as $player)
+                                        @foreach($allPlayers as $player)
                                             <option value="{{ $player->id }}" @selected($team->owner_player_id === $player->id)>
                                                 {{ $player->name }} ({{ $player->specialization ?? 'Player' }})
                                             </option>

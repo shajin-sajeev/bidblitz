@@ -47,9 +47,6 @@
                                 <a href="{{ route('profile.show') }}" class="dropdown-item">
                                     👤 My Profile
                                 </a>
-                                <a href="{{ route('settings.profile') }}" class="dropdown-item">
-                                    ⚙️ Profile Settings
-                                </a>
                                 <a href="{{ route('settings.index') }}" class="dropdown-item">
                                     🎨 Theme Settings
                                 </a>

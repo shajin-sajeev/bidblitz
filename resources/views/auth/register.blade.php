@@ -44,7 +44,7 @@
                 </small>
             </div>
             
-            <button type="submit" class="btn btn-primary btn-block">Register & Send OTP</button>
+            <button type="submit" class="btn btn-primary btn-block">Register</button>
         </form>
 
         <div class="mt-4">

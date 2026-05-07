@@ -30,13 +30,10 @@ class AuthController extends Controller
             'name' => $request->name,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
-            'role' => 'player'
+            'role' => 'player',
+            'is_verified' => true, // Auto-verify since no OTP
+            'verified_at' => now(),
         ]);
-        
-        // Generate and send OTP for verification
-        $user->otp = '123456'; // Mock OTP for Phase 1
-        $user->otp_expires_at = now()->addMinutes(10);
-        $user->save();
 
         // Create corresponding player entry with the same username
         \App\Models\Player::create([
@@ -50,9 +47,11 @@ class AuthController extends Controller
             'is_active' => true,
         ]);
 
-        session(['auth_phone' => $user->phone, 'registration_mode' => true]);
+        // Auto-login the user after successful registration
+        Auth::login($user);
+        $request->session()->regenerate();
 
-        return redirect()->route('auth.verify.show')->with('success', 'Registration successful! OTP sent for verification. (Mock: 123456)');
+        return redirect()->route('dashboard')->with('success', 'Registration successful! You are now logged in.');
     }
 
     public function login(Request $request)
@@ -73,63 +72,14 @@ class AuthController extends Controller
             ])->onlyInput('login');
         }
 
-        // Check if user is verified, if not send OTP
-        if (!$user->is_verified) {
-            // Generate and send OTP
-            $user->otp = '123456'; // Mock OTP for Phase 1
-            $user->otp_expires_at = now()->addMinutes(10);
-            $user->save();
-
-            session(['auth_phone' => $user->phone, 'registration_mode' => false]);
-
-            return redirect()->route('auth.verify.show')->with('info', 'Account not verified. OTP sent for verification. (Mock: 123456)');
-        }
-
-        // User is verified, log them in directly
+        // All users are now auto-verified, log them in directly
         Auth::login($user);
         $request->session()->regenerate();
 
         return redirect()->route('dashboard');
     }
 
-    public function showVerifyForm()
-    {
-        if (!session('auth_phone')) {
-            return redirect()->route('login');
-        }
-        return view('auth.verify');
-    }
-
-    public function verifyOtp(Request $request)
-    {
-        $request->validate([
-            'otp' => 'required|string|size:6'
-        ]);
-
-        $phone = session('auth_phone');
-        if (!$phone) {
-            return redirect()->route('login')->withErrors(['phone' => 'Session expired. Please try again.']);
-        }
-
-        $user = \App\Models\User::where('phone', $phone)->first();
-
-        if (!$user || $user->otp !== $request->otp || $user->otp_expires_at < now()) {
-            return back()->withErrors(['otp' => 'Invalid or expired OTP.']);
-        }
-
-        // Mark user as verified and clear OTP
-        $user->otp = null;
-        $user->otp_expires_at = null;
-        $user->is_verified = true;
-        $user->verified_at = now();
-        $user->save();
-
-        Auth::login($user);
-        session()->forget(['auth_phone', 'registration_mode']);
-
-        return redirect()->route('dashboard');
-    }
-
+    
     public function logout()
     {
         Auth::logout();
