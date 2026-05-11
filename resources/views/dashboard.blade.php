@@ -70,8 +70,13 @@
 
     <!-- Main Content -->
     <div class="dashboard-main" style="flex: 1; min-width: 0; overflow: hidden;">
+        <div class="dashboard-mobile-tabs" aria-label="Dashboard sections">
+            <button type="button" class="dashboard-tab-button active" data-dashboard-tab="overview">Overview</button>
+            <button type="button" class="dashboard-tab-button" data-dashboard-tab="auctions">Auctions</button>
+        </div>
+
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-4 gap-4 mb-8">
+        <div class="grid grid-cols-4 gap-4 mb-8 dashboard-tab-panel active" data-dashboard-panel="overview">
             <div class="glass-card text-center">
                 <div style="font-size: 2rem; font-weight: bold; color: var(--primary);">{{ \App\Models\Auction::where('created_by', auth()->id())->count() }}</div>
                 <div style="font-size: 0.85rem; color: var(--text-muted);">Created Auctions</div>
@@ -91,7 +96,7 @@
         </div>
 
         <!-- All Auctions with Pagination -->
-        <div class="glass-card">
+        <div class="glass-card dashboard-tab-panel" data-dashboard-panel="auctions">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3>📊 All Auctions</h3>
                 <a href="{{ route('auctions.create') }}" class="btn btn-primary" style="padding: 0.5rem 1rem;">
@@ -99,8 +104,8 @@
                 </a>
             </div>
             
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse;">
+            <div class="auction-table-wrap" style="overflow-x: auto;">
+                <table class="auction-list-table" style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 1px solid var(--border-color);">
                             <th style="text-align: left; padding: 1rem; font-weight: 600;">Name</th>
@@ -114,23 +119,23 @@
                     <tbody>
                         @forelse($auctions as $auction)
                             <tr style="border-bottom: 1px solid var(--border-color);" data-auction-id="{{ $auction->id }}">
-                                <td style="padding: 1rem;">
+                                <td style="padding: 1rem;" data-label="Name">
                                     <div>
                                         <strong>{{ $auction->name }}</strong>
                                         <div style="font-size: 0.85rem; color: var(--text-muted);">by {{ $auction->creator->name ?? 'Unknown' }}</div>
                                     </div>
                                 </td>
-                                <td style="padding: 1rem;">{{ $auction->sport }}</td>
-                                <td style="padding: 1rem;">
+                                <td style="padding: 1rem;" data-label="Sport">{{ $auction->sport }}</td>
+                                <td style="padding: 1rem;" data-label="Status">
                                     <span style="background: {{ $auction->status === 'live' ? '#10b981' : ($auction->status === 'completed' ? '#ef4444' : 'var(--primary)') }}; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; color: white;">
                                         {{ ucfirst($auction->status) }}
                                     </span>
                                 </td>
-                                <td style="padding: 1rem;">{{ $auction->total_teams }}</td>
-                                <td style="padding: 1rem;">${{ number_format($auction->budget, 2) }}</td>
-                                <td style="padding: 1rem;">
-                                    <div style="display: flex; gap: 0.5rem;">
-                                        @if($auction->created_by === auth()->id() && $auction->status !== 'completed')
+                                <td style="padding: 1rem;" data-label="Teams">{{ $auction->total_teams }}</td>
+                                <td style="padding: 1rem;" data-label="Budget">${{ number_format($auction->budget, 2) }}</td>
+                                <td style="padding: 1rem;" data-label="Actions">
+                                    <div class="auction-row-actions" style="display: flex; gap: 0.5rem;">
+                                        @if($auction->created_by === auth()->id() && !in_array($auction->status, ['completed', 'live'], true))
                                             <a href="{{ route('auctions.pool', $auction) }}" class="btn" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Manage</a>
                                             @if($auction->status === 'active')
                                                 @if($auction->canStartLive())
@@ -241,177 +246,7 @@
     }
 }
 
-/* Modern Pagination Styles */
-.pagination-wrapper {
-    margin-top: 3rem;
-    padding: 2rem 0;
-    background: color-mix(in srgb, var(--card-bg) 92%, var(--primary) 8%);
-    border-radius: 20px;
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 0 auto;
-    max-width: fit-content;
-}
-
-.pagination-items {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: color-mix(in srgb, var(--card-bg) 90%, #000000 10%);
-    border-radius: 100px;
-    backdrop-filter: blur(10px);
-}
-
-.pagination .page-item {
-    list-style: none;
-    margin: 0;
-}
-
-.pagination .page-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 44px;
-    height: 44px;
-    padding: 0 16px;
-    margin: 0;
-    background: transparent;
-    border: 2px solid transparent;
-    border-radius: 50px;
-    color: var(--text-muted);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.pagination .page-link:hover {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-}
-
-.pagination .page-item.active .page-link {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
-    transform: scale(1.1);
-    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
-    font-weight: 600;
-}
-
-.pagination .page-item.disabled .page-link {
-    background: transparent;
-    border-color: transparent;
-    color: color-mix(in srgb, var(--text-muted) 50%, transparent);
-    cursor: not-allowed;
-    transform: none;
-    opacity: 0.5;
-}
-
-.pagination .page-link::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: all 0.6s ease;
-    z-index: 0;
-}
-
-.pagination .page-link:hover::before {
-    width: 100%;
-    height: 100%;
-}
-
-.pagination .page-link span {
-    position: relative;
-    z-index: 1;
-}
-
-/* Pagination arrows styling */
-.pagination .page-link svg {
-    width: 18px;
-    height: 18px;
-    transition: transform 0.3s ease;
-}
-
-.pagination .page-link:hover svg {
-    transform: translateX(-2px);
-}
-
-.pagination .page-link:hover[rel="next"] svg {
-    transform: translateX(2px);
-}
-
-/* Enhanced pagination info */
-.pagination-info {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    font-weight: 500;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.pagination-info::before,
-.pagination-info::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
-    max-width: 100px;
-}
-
-.pagination-info span {
-    color: #667eea;
-    font-weight: 600;
-    font-size: 1rem;
-    text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .pagination-items {
-        padding: 0.25rem;
-        gap: 0.25rem;
-    }
-    
-    .pagination .page-link {
-        min-width: 36px;
-        height: 36px;
-        padding: 0 12px;
-        font-size: 0.85rem;
-    }
-    
-    .pagination-info {
-        font-size: 0.8rem;
-    }
-    
-    .pagination-info::before,
-    .pagination-info::after {
-        max-width: 50px;
-    }
-}
+/* Pagination is styled globally in app.css/style.css for consistency. */
 
 </style>
 

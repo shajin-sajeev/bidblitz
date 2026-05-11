@@ -296,5 +296,187 @@
         max-width: 100%;
     }
 }
+
+@media (max-width: 768px) {
+    .auction-detail-layout {
+        display: block;
+        width: 100%;
+        min-height: auto;
+    }
+
+    .auction-sidebar {
+        display: none;
+    }
+
+    .auction-main-content {
+        width: 100%;
+        max-width: 100%;
+        display: grid;
+        gap: 0.9rem;
+    }
+
+    .auction-main-content > .glass-card {
+        margin-bottom: 0 !important;
+        padding: 1rem !important;
+        border-radius: 22px !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.2);
+    }
+
+    .auction-main-content > .glass-card:first-child {
+        overflow: hidden;
+        background:
+            linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(14, 165, 233, 0.08) 52%, rgba(15, 23, 42, 0.78)),
+            var(--card-bg) !important;
+    }
+
+    .auction-main-content > .glass-card:first-child::before {
+        content: "";
+        display: block;
+        height: 4px;
+        margin: -1rem -1rem 1rem;
+        background: linear-gradient(90deg, var(--primary), rgba(14, 165, 233, 0.9));
+    }
+
+    .auction-main-content > .glass-card:first-child > .flex {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+    }
+
+    .auction-main-content > .glass-card:first-child h1 {
+        margin-bottom: 0.55rem !important;
+        font-size: clamp(1.65rem, 8vw, 2.2rem);
+        line-height: 1.1;
+        overflow-wrap: anywhere;
+    }
+
+    .auction-main-content > .glass-card:first-child h2 {
+        font-size: 0.98rem !important;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    .auction-main-content > .glass-card:first-child > .flex > div:last-child {
+        text-align: left !important;
+    }
+
+    .auction-main-content > .glass-card:first-child .btn,
+    .auction-main-content > .glass-card:last-child .btn {
+        width: 100%;
+        min-height: 48px;
+        border-radius: 16px !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-weight: 800;
+    }
+
+    .auction-main-content > .glass-card h2 {
+        margin-bottom: 1rem !important;
+        font-size: 1.18rem;
+        line-height: 1.2;
+    }
+
+    .auction-main-content > .glass-card > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        gap: 0.8rem !important;
+    }
+
+    .auction-main-content > .glass-card > div[style*="grid-template-columns"] > div {
+        min-height: 112px;
+        padding: 1rem !important;
+        border-radius: 18px !important;
+        display: grid;
+        align-content: center;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        background-color: rgba(255, 255, 255, 0.045) !important;
+    }
+
+    .auction-main-content > .glass-card > div[style*="grid-template-columns"] > div > div:first-child {
+        font-size: 1.45rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .auction-main-content > .glass-card > div[style*="grid-template-columns"] > div > div:nth-child(2) {
+        font-size: 1.5rem !important;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+
+    .auction-main-content > .glass-card > div[style*="display: grid"] > div[style*="border: var(--glass-border)"] {
+        padding: 1rem !important;
+        border-radius: 18px !important;
+        background-color: rgba(255, 255, 255, 0.045) !important;
+    }
+
+    .auction-main-content > .glass-card > div[style*="display: grid"] > div[style*="border: var(--glass-border)"] > div:first-child {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.65rem !important;
+        margin-bottom: 0.9rem !important;
+    }
+
+    .auction-main-content > .glass-card > div[style*="display: grid"] > div[style*="border: var(--glass-border)"] h3 {
+        font-size: 1.05rem !important;
+        overflow-wrap: anywhere;
+    }
+
+    .auction-main-content > .glass-card > div[style*="display: grid"] > div[style*="border: var(--glass-border)"] > div:nth-child(2) {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.75rem !important;
+    }
+
+    .auction-main-content > .glass-card > div[style*="display: grid"] > div[style*="border: var(--glass-border)"] > div:nth-child(2) > div {
+        padding: 0.78rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .auction-main-content > .glass-card > div[style*="display: grid"] > div[style*="border-left"] {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.65rem !important;
+        align-items: start !important;
+        padding: 0.9rem !important;
+        border-radius: 16px !important;
+        background: rgba(255, 255, 255, 0.045) !important;
+    }
+
+    .auction-main-content > .glass-card > div[style*="display: grid"] > div[style*="border-left"] > div:last-child {
+        text-align: left !important;
+    }
+
+    .auction-main-content > .glass-card:last-child {
+        position: sticky;
+        bottom: 0.65rem;
+        z-index: 5;
+        backdrop-filter: blur(18px);
+    }
+
+    .auction-main-content > .glass-card:last-child > div {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.65rem !important;
+    }
+}
+
+@media (max-width: 420px) {
+    .auction-main-content > .glass-card {
+        padding: 0.9rem !important;
+        border-radius: 20px !important;
+    }
+
+    .auction-main-content > .glass-card:first-child::before {
+        margin: -0.9rem -0.9rem 0.9rem;
+    }
+
+    .auction-main-content > .glass-card > div[style*="display: grid"] > div[style*="border: var(--glass-border)"] > div:nth-child(2) {
+        grid-template-columns: 1fr !important;
+    }
+}
 </style>
 @endsection

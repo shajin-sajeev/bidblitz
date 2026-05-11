@@ -56,7 +56,9 @@ function addThemeToggle() {
     
     // Create theme toggle button
     const themeToggle = document.createElement('button');
-    themeToggle.className = 'theme-toggle btn btn-outline';
+    themeToggle.className = 'theme-toggle btn btn-outline nav-theme-button';
+    themeToggle.type = 'button';
+    themeToggle.setAttribute('aria-label', 'Toggle theme');
     themeToggle.innerHTML = `
         <span class="theme-icon">🌙</span>
     `;
@@ -69,7 +71,8 @@ function addThemeToggle() {
         cursor: pointer;
         font-size: 1.2rem;
         transition: all 0.3s ease;
-        margin-left: 1rem;
+        margin-left: 0;
+        min-width: 44px;
     `;
     
     themeToggle.addEventListener('click', function() {

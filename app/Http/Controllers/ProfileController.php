@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Auction;
-use App\Models\AuctionHistory;
 use App\Models\AuctionParticipant;
 use App\Models\AuctionPlayer;
 use App\Models\Team;
@@ -31,13 +30,7 @@ class ProfileController extends Controller
             })->count()
         ];
         
-        $recentActivity = AuctionHistory::with(['auction', 'bidder'])
-            ->where('bidder_id', $user->id)
-            ->orderBy('action_at', 'desc')
-            ->limit(10)
-            ->get();
-        
-        return view('profile.show', compact('user', 'stats', 'recentActivity'));
+        return view('profile.show', compact('user', 'stats'));
     }
 
     public function store(Request $request)

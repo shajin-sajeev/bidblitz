@@ -460,6 +460,295 @@ body.light-theme .pagination-items {
     }
 }
 
+/* Mobile app screen for Manage Player Pool */
+@media (max-width: 768px) {
+    .manage-hero-card,
+    .manage-tabs-card {
+        border-radius: 18px;
+        padding: 1rem !important;
+    }
+
+    .manage-hero-card {
+        background:
+            linear-gradient(135deg, color-mix(in srgb, var(--card-bg) 94%, transparent), color-mix(in srgb, var(--primary) 8%, var(--card-bg))),
+            var(--card-bg);
+    }
+
+    .manage-hero-layout {
+        display: grid !important;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        align-items: stretch !important;
+    }
+
+    .manage-hero-card h2 {
+        font-size: 1.22rem !important;
+        line-height: 1.2;
+        margin-bottom: 0.45rem;
+    }
+
+    .manage-hero-card p {
+        font-size: 0.84rem;
+        line-height: 1.45;
+        margin-top: 0.25rem !important;
+    }
+
+    .manage-hero-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.6rem !important;
+    }
+
+    .manage-hero-actions .btn {
+        width: 100%;
+        min-height: 2.75rem;
+        padding: 0.6rem 0.7rem !important;
+        border-radius: 13px !important;
+        font-size: 0.82rem;
+        transform: none !important;
+    }
+
+    .tab-container {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.45rem;
+        padding: 0.35rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        background: color-mix(in srgb, var(--form-bg) 88%, transparent);
+        position: sticky;
+        top: 4.55rem;
+        z-index: 35;
+        backdrop-filter: blur(10px);
+    }
+
+    .tab-button {
+        min-height: 2.75rem;
+        padding: 0.55rem 0.45rem;
+        border-radius: 12px;
+        font-size: 0.76rem;
+        line-height: 1.15;
+        white-space: normal;
+    }
+
+    .tab-button.active {
+        box-shadow: 0 8px 22px rgba(251, 191, 36, 0.24);
+    }
+
+    .tab-button.active::after {
+        display: none;
+    }
+
+    .tab-content h3 {
+        font-size: 1.08rem;
+        margin-bottom: 0.8rem;
+    }
+
+    #search-input {
+        min-height: 2.85rem;
+        border-radius: 14px;
+        font-size: 0.9rem;
+    }
+
+    .manage-players-container,
+    .manage-pool-container {
+        max-height: none !important;
+        overflow: visible !important;
+        padding-right: 0 !important;
+    }
+
+    .player-card {
+        padding: 0.95rem;
+        margin-bottom: 0.85rem;
+        border-radius: 16px;
+        transform: none !important;
+    }
+
+    .player-card:hover {
+        transform: none !important;
+    }
+
+    .available-player-layout {
+        display: grid !important;
+        grid-template-columns: 54px minmax(0, 1fr);
+        gap: 0.8rem !important;
+        align-items: start !important;
+    }
+
+    .player-avatar {
+        width: 54px;
+        height: 54px;
+        border-width: 3px;
+        font-size: 1rem;
+    }
+
+    .player-info {
+        margin-left: 0;
+        min-width: 0;
+    }
+
+    .player-name {
+        font-size: 1rem;
+        line-height: 1.2;
+        margin-bottom: 0.25rem;
+        overflow-wrap: anywhere;
+    }
+
+    .player-username,
+    .player-specialization {
+        font-size: 0.78rem;
+        overflow-wrap: anywhere;
+    }
+
+    .price-input-group {
+        grid-column: 1 / -1;
+        display: block;
+        width: 100%;
+        margin-top: 0.2rem;
+    }
+
+    .price-input-group form,
+    .price-input-group > .flex {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.55rem !important;
+        align-items: stretch !important;
+        width: 100%;
+    }
+
+    .price-input {
+        width: 100%;
+        min-height: 2.75rem;
+        border-radius: 12px;
+        padding: 0.65rem 0.75rem;
+        font-size: 0.9rem;
+        transform: none !important;
+    }
+
+    .price-input-group .btn,
+    .price-input-group button {
+        min-height: 2.75rem;
+        padding: 0.55rem 0.75rem !important;
+        border-radius: 12px !important;
+        font-size: 0.82rem;
+        transform: none !important;
+        white-space: nowrap;
+    }
+
+    .pool-header {
+        border-radius: 16px;
+        padding: 0.9rem;
+    }
+
+    .pool-header h3 {
+        font-size: 1.05rem !important;
+        margin-bottom: 0.6rem;
+    }
+
+    .pool-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.45rem;
+    }
+
+    .pool-stat {
+        border-radius: 12px;
+        padding: 0.6rem 0.35rem;
+        background: rgba(255, 255, 255, 0.18);
+    }
+
+    .pool-stat-value {
+        font-size: 1.1rem;
+        line-height: 1.15;
+    }
+
+    .pool-stat-label {
+        font-size: 0.62rem;
+        line-height: 1.2;
+    }
+
+    #pool-container {
+        max-height: none !important;
+        overflow: visible !important;
+        padding-right: 0;
+        gap: 0.85rem;
+    }
+
+    .pool-player-card {
+        min-height: auto;
+        padding: 0.9rem;
+        border-radius: 16px;
+        gap: 0.8rem;
+    }
+
+    .pool-player-main {
+        gap: 0.75rem;
+    }
+
+    .pool-player-avatar {
+        width: 48px;
+        height: 48px;
+        flex-basis: 48px;
+        border-radius: 13px;
+        font-size: 0.95rem;
+    }
+
+    .pool-player-name-row {
+        flex-direction: row !important;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .pool-player-name-row h4 {
+        font-size: 0.98rem;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+
+    .pool-status-pill {
+        font-size: 0.62rem;
+        padding: 0.25rem 0.45rem;
+    }
+
+    .pool-player-username,
+    .pool-player-meta span {
+        font-size: 0.76rem;
+        overflow-wrap: anywhere;
+    }
+
+    .pool-player-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .remove-pool-player-btn {
+        width: 100%;
+        min-height: 2.6rem;
+        border-radius: 12px;
+    }
+}
+
+@media (max-width: 430px) {
+    .manage-hero-actions,
+    .price-input-group form,
+    .price-input-group > .flex {
+        grid-template-columns: 1fr;
+    }
+
+    .tab-container {
+        top: 4.35rem;
+    }
+
+    .pool-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .pool-player-name-row {
+        flex-direction: column !important;
+    }
+}
+
 /* Tab styles */
 .tab-container {
     display: flex;
@@ -514,187 +803,17 @@ body.light-theme .pagination-items {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Modern Pagination Styles */
-.pagination-wrapper {
-    margin-top: 3rem;
-    padding: 2rem 0;
-    background: color-mix(in srgb, var(--card-bg) 92%, var(--primary) 8%);
-    border-radius: 20px;
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--border-color);
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 0 auto;
-    max-width: fit-content;
-}
-
-.pagination-items {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    background: color-mix(in srgb, var(--card-bg) 90%, #000000 10%);
-    border-radius: 100px;
-    backdrop-filter: blur(10px);
-}
-
-.pagination .page-item {
-    list-style: none;
-    margin: 0;
-}
-
-.pagination .page-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 44px;
-    height: 44px;
-    padding: 0 16px;
-    margin: 0;
-    background: transparent;
-    border: 2px solid transparent;
-    border-radius: 50px;
-    color: var(--text-muted);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.95rem;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.pagination .page-link:hover {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-}
-
-.pagination .page-item.active .page-link {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: white;
-    transform: scale(1.1);
-    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
-    font-weight: 600;
-}
-
-.pagination .page-item.disabled .page-link {
-    background: transparent;
-    border-color: transparent;
-    color: color-mix(in srgb, var(--text-muted) 50%, transparent);
-    cursor: not-allowed;
-    transform: none;
-    opacity: 0.5;
-}
-
-.pagination .page-link::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: all 0.6s ease;
-    z-index: 0;
-}
-
-.pagination .page-link:hover::before {
-    width: 100%;
-    height: 100%;
-}
-
-.pagination .page-link span {
-    position: relative;
-    z-index: 1;
-}
-
-/* Pagination arrows styling */
-.pagination .page-link svg {
-    width: 18px;
-    height: 18px;
-    transition: transform 0.3s ease;
-}
-
-.pagination .page-link:hover svg {
-    transform: translateX(-2px);
-}
-
-.pagination .page-link:hover[rel="next"] svg {
-    transform: translateX(2px);
-}
-
-/* Enhanced pagination info */
-.pagination-info {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    font-weight: 500;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.pagination-info::before,
-.pagination-info::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
-    max-width: 100px;
-}
-
-.pagination-info span {
-    color: #667eea;
-    font-weight: 600;
-    font-size: 1rem;
-    text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .pagination-items {
-        padding: 0.25rem;
-        gap: 0.25rem;
-    }
-    
-    .pagination .page-link {
-        min-width: 36px;
-        height: 36px;
-        padding: 0 12px;
-        font-size: 0.85rem;
-    }
-    
-    .pagination-info {
-        font-size: 0.8rem;
-    }
-    
-    .pagination-info::before,
-    .pagination-info::after {
-        max-width: 50px;
-    }
-}
+/* Pagination is styled globally in app.css/style.css for consistency. */
 
 </style>
-<div class="glass-card mb-8">
-    <div class="flex items-center justify-between">
+<div class="glass-card mb-8 manage-hero-card">
+    <div class="flex items-center justify-between manage-hero-layout">
         <div>
             <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Manage Player Pool: {{ $auction->name }}</h2>
             <p class="text-gray-400 mt-1">Add players to the auction and set their base prices.</p>
             <p class="text-gray-400 mt-1">Maximum base price per player: <strong>Rs. {{ number_format($maxBasePrice, 2) }}</strong></p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-3 manage-hero-actions">
             <button onclick="createAuction()" class="btn bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
                 <i class="fas fa-rocket mr-2"></i>Create Auction
             </button>
@@ -703,7 +822,7 @@ body.light-theme .pagination-items {
     </div>
 </div>
 
-<div class="glass-card">
+<div class="glass-card manage-tabs-card">
     <!-- Tab Navigation -->
     <div class="tab-container">
         <button class="tab-button {{ $activeTab === 'available' ? 'active' : '' }}" onclick="switchTabImmediate('available')">
@@ -721,10 +840,10 @@ body.light-theme .pagination-items {
             <input type="text" id="search-input" class="form-control" placeholder="Search by name, username, or specialization" value="{{ $search }}">
         </div>
 
-        <div id="players-container" style="max-height: 600px; overflow-y: auto; padding-right: 0.5rem;">
+        <div id="players-container" class="manage-players-container" style="max-height: 600px; overflow-y: auto; padding-right: 0.5rem;">
             @forelse($players as $player)
                 <div class="player-card" data-player-id="{{ $player->id }}">
-                    <div class="flex items-start gap-4">
+                    <div class="flex items-start gap-4 available-player-layout">
                         <div class="player-avatar">
                             @if($player->avatar)
                                 <img src="{{ $player->avatar }}" alt="{{ $player->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
@@ -811,7 +930,7 @@ body.light-theme .pagination-items {
             </div>
         </div>
         
-        <div id="pool-container" style="max-height: 500px; overflow-y: auto; margin-top: 1rem;">
+        <div id="pool-container" class="manage-pool-container" style="max-height: 500px; overflow-y: auto; margin-top: 1rem;">
             @forelse($pool as $item)
                 @include('partials.pool-item', ['item' => $item])
             @empty

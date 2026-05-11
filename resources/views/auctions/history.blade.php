@@ -81,6 +81,15 @@
                     <a href="{{ route('auctions.create') }}" class="btn btn-primary" style="margin-top: 1rem;">➕ Create Auction</a>
                 </div>
             @endforelse
+
+            @if($userAuctions->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Showing <span>{{ $userAuctions->firstItem() }}</span> to <span>{{ $userAuctions->lastItem() }}</span> of <span>{{ $userAuctions->total() }}</span> created auctions
+                    </div>
+                    {{ $userAuctions->links('pagination::custom') }}
+                </div>
+            @endif
         </div>
 
         <!-- Participated Auctions -->
@@ -109,6 +118,15 @@
                         </div>
                     </div>
                 @endforeach
+
+                @if($participatedAuctions->hasPages())
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+                            Showing <span>{{ $participatedAuctions->firstItem() }}</span> to <span>{{ $participatedAuctions->lastItem() }}</span> of <span>{{ $participatedAuctions->total() }}</span> participated auctions
+                        </div>
+                        {{ $participatedAuctions->links('pagination::custom') }}
+                    </div>
+                @endif
             </div>
         @endif
     </div>

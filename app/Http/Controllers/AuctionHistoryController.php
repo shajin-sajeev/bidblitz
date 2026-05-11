@@ -20,7 +20,8 @@ class AuctionHistoryController extends Controller
         $userAuctions = Auction::with(['creator', 'teams', 'statistics'])
             ->where('created_by', $currentUserId)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(5, ['*'], 'created_page')
+            ->withQueryString();
 
         $participatedAuctions = Auction::with(['creator', 'teams', 'statistics'])
             ->whereHas('participants', function($query) use ($currentUserId) {
@@ -28,7 +29,8 @@ class AuctionHistoryController extends Controller
             })
             ->where('created_by', '!=', $currentUserId)
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(5, ['*'], 'participated_page')
+            ->withQueryString();
 
         return view('auctions.history', compact('userAuctions', 'participatedAuctions'));
     }

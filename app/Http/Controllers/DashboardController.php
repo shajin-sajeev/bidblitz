@@ -75,7 +75,7 @@ class DashboardController extends Controller
     {
         $auctions = Auction::with(['creator'])
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(5);
             
         return view('dashboard', compact('auctions'));
     }

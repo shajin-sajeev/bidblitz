@@ -311,6 +311,367 @@ body.light-theme .assignment-panel {
     }
 }
 
+@media (max-width: 768px) {
+    .live-shell {
+        gap: 0.9rem;
+        padding-bottom: 1rem;
+    }
+
+    .live-header {
+        padding: 1rem !important;
+        border-radius: 18px;
+        background:
+            linear-gradient(135deg, color-mix(in srgb, var(--card-bg) 94%, transparent), color-mix(in srgb, var(--primary) 8%, var(--card-bg))),
+            var(--card-bg);
+    }
+
+    .live-header h2 {
+        font-size: 1.28rem;
+        line-height: 1.2;
+        margin-bottom: 0.4rem !important;
+    }
+
+    .live-header p {
+        font-size: 0.85rem;
+        line-height: 1.45;
+    }
+
+    .live-header-actions {
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem !important;
+        align-items: stretch !important;
+    }
+
+    .live-header-actions .live-status,
+    .live-header-actions .btn,
+    .live-header-actions form,
+    .live-header-actions button,
+    .live-header-actions a {
+        width: 100%;
+    }
+
+    .live-header-actions form {
+        display: contents;
+    }
+
+    .live-status {
+        justify-content: center;
+        min-height: 2.5rem;
+        padding: 0.5rem 0.7rem;
+        font-size: 0.72rem;
+        text-align: center;
+    }
+
+    .live-start-locked {
+        grid-column: 1 / -1;
+        max-width: none !important;
+        padding: 0.85rem;
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        background: color-mix(in srgb, var(--form-bg) 88%, transparent);
+    }
+
+    .auction-pass-owner-only {
+        max-width: none;
+        padding: 0.8rem;
+        border-radius: 14px;
+    }
+
+    .auction-pass-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: stretch;
+    }
+
+    .auction-pass-code {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        letter-spacing: 0.08em;
+        font-size: 0.98rem;
+    }
+
+    #live-auction-tabs-card {
+        padding: 0.8rem !important;
+        border-radius: 18px;
+    }
+
+    .live-tabs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+        gap: 0.35rem;
+        padding: 0.35rem;
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        background: color-mix(in srgb, var(--form-bg) 88%, transparent);
+        position: sticky;
+        top: 4.65rem;
+        z-index: 35;
+        backdrop-filter: blur(10px);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .live-tab-button {
+        min-height: 2.6rem;
+        padding: 0.55rem 0.45rem;
+        border-radius: 12px;
+        font-size: 0.76rem;
+        line-height: 1.1;
+        white-space: normal;
+    }
+
+    .live-tab-button.active {
+        box-shadow: 0 8px 22px rgba(251, 191, 36, 0.24);
+    }
+
+    .live-tab-panel {
+        padding-top: 0.95rem !important;
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+        margin-bottom: 1rem !important;
+    }
+
+    .summary-card {
+        padding: 0.8rem;
+        border-radius: 14px;
+        min-height: 5rem;
+    }
+
+    .summary-card span {
+        font-size: 0.68rem;
+        letter-spacing: 0.03em;
+    }
+
+    .summary-card strong {
+        font-size: 1.12rem;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+    }
+
+    .assignment-panel {
+        padding: 0.95rem;
+        border-radius: 16px;
+        margin-bottom: 1rem !important;
+    }
+
+    .assignment-panel h3,
+    #team-setup h3,
+    .player-list-panel h3 {
+        font-size: 1.05rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .assignment-grid,
+    .setup-grid {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+    }
+
+    .assignment-grid .btn,
+    #team-setup-form > .btn {
+        width: 100%;
+        min-height: 2.85rem;
+    }
+
+    .team-grid {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+    }
+
+    .team-card {
+        padding: 0.95rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+    }
+
+    body.light-theme .team-card {
+        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    .team-card-header {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.7rem;
+    }
+
+    .team-card h4 {
+        font-size: 1rem;
+        line-height: 1.25;
+    }
+
+    .owner-name {
+        font-size: 0.78rem;
+    }
+
+    .budget-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+
+    .budget-pill {
+        padding: 0.65rem;
+        border-radius: 12px;
+    }
+
+    .budget-pill span {
+        font-size: 0.64rem;
+    }
+
+    .budget-pill strong {
+        font-size: 0.9rem;
+        overflow-wrap: anywhere;
+    }
+
+    .roster-list {
+        max-height: 12rem;
+        overflow-y: auto;
+        padding-right: 0.15rem;
+    }
+
+    .roster-item {
+        align-items: center;
+        padding: 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .player-board {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+    }
+
+    .wheel-card {
+        padding: 1rem !important;
+        border-radius: 18px;
+        position: sticky;
+        top: 8.4rem;
+        z-index: 20;
+    }
+
+    .spin-wheel {
+        width: min(66vw, 220px);
+        height: min(66vw, 220px);
+        padding: 10px;
+        margin-bottom: 0.85rem;
+    }
+
+    .wheel-center {
+        padding: 0.95rem;
+    }
+
+    #selected-player-name {
+        font-size: 1.05rem !important;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+    }
+
+    #selected-player-price {
+        font-size: 0.92rem;
+    }
+
+    .wheel-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem !important;
+    }
+
+    .wheel-actions .btn {
+        width: 100%;
+        min-height: 2.75rem;
+        padding: 0.55rem !important;
+        font-size: 0.82rem !important;
+        border-radius: 12px;
+    }
+
+    .player-list-panel {
+        min-width: 0;
+    }
+
+    .player-list {
+        max-height: none;
+        padding-right: 0;
+        gap: 0.65rem;
+    }
+
+    .player-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        padding: 0.8rem;
+        border-radius: 15px;
+    }
+
+    .player-row > div:first-child {
+        min-width: 0;
+    }
+
+    .player-avatar {
+        width: 42px !important;
+        height: 42px !important;
+        flex: 0 0 42px;
+    }
+
+    .player-row h4 {
+        font-size: 0.95rem;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+    }
+
+    .player-meta {
+        font-size: 0.74rem;
+        line-height: 1.35;
+    }
+
+    .player-row .status-pill {
+        justify-self: start;
+        width: auto;
+    }
+
+    .setup-row {
+        padding: 0.9rem;
+        border-radius: 15px;
+    }
+
+    .select2-container {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 430px) {
+    .live-header-actions,
+    .summary-grid,
+    .budget-grid,
+    .wheel-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .live-tabs {
+        grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+    }
+
+    .auction-pass-row {
+        grid-template-columns: 1fr;
+    }
+
+    .auction-pass-row .btn {
+        width: 100%;
+    }
+
+    .team-card-header {
+        flex-direction: column;
+    }
+
+    .wheel-card {
+        position: static;
+    }
+}
+
 .auction-pass-owner-only {
     margin-top: 1rem;
     padding: 0.85rem 1rem;
@@ -499,7 +860,7 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
             @endif
             
                     </div>
-        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+        <div class="live-header-actions" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
             <span class="live-status">{{ ucfirst($auction->status) }}</span>
             <span class="live-status">Viewers: {{ $viewerCount }}</span>
             @if($isOwner && $auction->status === 'active')
@@ -509,7 +870,7 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                         <button type="submit" class="btn btn-primary">Start Auction</button>
                     </form>
                 @else
-                    <div style="max-width: 22rem; text-align: left;">
+                    <div class="live-start-locked" style="max-width: 22rem; text-align: left;">
                         <div style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.35rem;">Start locked</div>
                         <p style="margin: 0 0 0.5rem 0; font-size: 0.88rem; line-height: 1.45; color: var(--text-main);">
                             Go live only after every team has an owner player in <strong>Team Setup</strong> and every team manager has joined with their <strong>team pass</strong>.
@@ -538,7 +899,7 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
         <div class="alert alert-info" style="margin:1rem 0;">You are viewing the auction as a <b>spectator</b>. You cannot participate in bidding or team actions.</div>
     @endif
     <div class="glass-card" id="live-auction-tabs-card">
-        <div class="live-tabs">
+        <div class="live-tabs" aria-label="Live auction sections">
             <button type="button" class="live-tab-button active" data-tab="live-summary">Live Summary</button>
             <button type="button" class="live-tab-button" data-tab="players-wheel">Players & Wheel</button>
             @if($isOwner)
@@ -647,7 +1008,7 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                         </div>
                     </div>
                     @if($isOwner)
-                        <div style="display: flex; gap: 0.65rem; justify-content: center; flex-wrap: wrap;">
+                        <div class="wheel-actions" style="display: flex; gap: 0.65rem; justify-content: center; flex-wrap: wrap;">
                             <button type="button" class="btn btn-primary" onclick="spinPlayer()" {{ $auction->status !== 'live' ? 'disabled' : '' }}>Spin Random Player</button>
                             <button type="button" class="btn" onclick="markCurrentPlayerUnsold()" {{ !$currentPlayer || $auction->status !== 'live' ? 'disabled' : '' }} style="background: rgba(239, 68, 68, 0.14); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">Unsold</button>
                         </div>
@@ -657,7 +1018,7 @@ body.light-theme #live-auction-tabs-card .select2-live-scope .select2-container-
                     @endif
                 </div>
 
-                <div>
+                <div class="player-list-panel">
                     <h3>Complete Player List</h3>
                     <div class="player-list">
                         @foreach($auctionPlayers as $item)

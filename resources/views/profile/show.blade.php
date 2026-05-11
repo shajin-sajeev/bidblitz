@@ -19,8 +19,6 @@
                     </a>
                     <form id="profile-photo-form" style="display: none;">
                         @csrf
-                        <input type="hidden" name="name" value="{{ $user->name }}">
-                        <input type="hidden" name="username" value="{{ $user->username }}">
                     </form>
                     
                     <label for="profile-photo-upload" class="btn-upload-photo">
@@ -54,7 +52,7 @@
     </div>
 
     <!-- Statistics Grid -->
-    <div class="grid grid-cols-4 gap-4 mb-8">
+    <div class="profile-stats-grid mb-8">
         <div class="glass-card text-center stat-card-enhanced">
             <div class="stat-icon-enhanced">🏆</div>
             <div class="stat-value-enhanced">{{ $stats['teams_owned'] }}</div>
@@ -76,262 +74,363 @@
             <div class="stat-label-enhanced">Players Acquired</div>
         </div>
     </div>
-
-    <!-- Recent Activity -->
-    <div class="glass-card activity-card-enhanced">
-        <h3 class="activity-title-enhanced">📈 Recent Activity</h3>
-        @php
-            $recentActivity = \App\Models\AuctionHistory::with(['auction', 'bidder'])
-                ->where('bidder_id', $user->id)
-                ->orderBy('action_at', 'desc')
-                ->limit(10)
-                ->get();
-        @endphp
-        @forelse($recentActivity as $activity)
-            <div class="activity-item-enhanced">
-                <div class="activity-content">
-                    <div class="activity-header-enhanced">
-                        <div class="activity-action">
-                            {{ ucfirst(str_replace('_', ' ', $activity->action)) }}
-                            @if($activity->auction) in {{ $activity->auction->name }} @endif
-                        </div>
-                        <div class="activity-time-enhanced">
-                            {{ $activity->action_at->diffForHumans() }}
-                        </div>
-                    </div>
-                    @if($activity->amount)
-                        <div class="activity-amount-enhanced">
-                            ${{ number_format($activity->amount, 2) }}
-                        </div>
-                    @endif
-                    @if($activity->bidder)
-                        <div class="activity-user">
-                            by {{ $activity->bidder->name ?? 'Unknown' }}
-                        </div>
-                    @endif
-                </div>
-            </div>
-        @empty
-            <div class="empty-state-enhanced">
-                <div class="empty-icon">📊</div>
-                <h4>No Recent Activity</h4>
-                <p>Your auction activity will appear here once you start participating in auctions.</p>
-            </div>
-        @endforelse
-    </div>
 </div>
 
 <style>
 .profile-container {
-    max-width: 1200px;
+    max-width: 1180px;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 1rem;
+    display: grid;
+    gap: 1.5rem;
 }
 
 .profile-header-card {
-    padding: 2rem;
     position: relative;
     overflow: hidden;
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    padding: 2rem;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background:
+        linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(14, 165, 233, 0.08) 48%, rgba(15, 23, 42, 0.78)),
+        var(--card-bg);
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.24);
 }
 
-.stat-icon {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    opacity: 0.8;
+.profile-header-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-top: 4px solid var(--primary);
+    pointer-events: none;
 }
 
-.stat-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-    line-height: 1;
-}
-
-.stat-label {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.activity-item {
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--border-color);
-    transition: all 0.2s ease;
-}
-
-.activity-item:hover {
-    background: rgba(251, 191, 36, 0.05);
-}
-
-.activity-item:last-child {
-    border-bottom: none;
-}
-
-.activity-header {
-    display: flex;
-    justify-content: space-between;
+.profile-header-content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
-    margin-bottom: 0.5rem;
-}
-
-.activity-title {
-    font-weight: 600;
-    color: var(--text-main);
-}
-
-.activity-time {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-}
-
-.activity-amount {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--primary);
+    gap: 2rem;
 }
 
 .profile-avatar-medium {
     position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
 }
 
 .profile-avatar-img {
-    width: 100px;
-    height: 100px;
+    width: 132px;
+    height: 132px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid var(--primary);
-    box-shadow: 0 6px 24px rgba(251, 191, 36, 0.3);
+    border: 4px solid rgba(251, 191, 36, 0.95);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28), 0 0 0 8px rgba(251, 191, 36, 0.12);
     transition: all 0.3s ease;
 }
 
 .profile-avatar-img:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 28px rgba(251, 191, 36, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32), 0 0 0 9px rgba(251, 191, 36, 0.16);
 }
 
 .profile-avatar-default {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2));
-    border: 3px solid var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.5rem;
-    box-shadow: 0 6px 24px rgba(251, 191, 36, 0.3);
-    transition: all 0.3s ease;
-}
-
-.profile-avatar-default:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 28px rgba(251, 191, 36, 0.4);
+    font-size: 3.2rem;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.35), rgba(14, 165, 233, 0.2));
 }
 
 .profile-actions-overlay {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
     display: flex;
-    gap: 0.75rem;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: min(100%, 330px);
 }
 
-.btn-edit-profile {
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
-    background: var(--primary);
-    color: #000;
+.btn-edit-profile,
+.btn-upload-photo {
+    min-height: 42px;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
     font-size: 0.9rem;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-weight: 800;
+    line-height: 1;
     transition: all 0.3s ease;
     gap: 0.5rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.btn-edit-profile {
+    background: var(--primary);
+    color: #111827;
+    box-shadow: 0 10px 24px rgba(251, 191, 36, 0.22);
 }
 
 .btn-edit-profile:hover {
     background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(251, 191, 36, 0.4);
-}
-
-.btn-edit-profile span {
-    white-space: nowrap;
+    box-shadow: 0 14px 30px rgba(251, 191, 36, 0.3);
 }
 
 .btn-upload-photo {
-    padding: 0.75rem 1.25rem;
-    border-radius: 8px;
-    background: var(--accent);
-    color: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
-    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
 }
 
 .btn-upload-photo:hover {
-    background: var(--accent-hover);
+    background: rgba(255, 255, 255, 0.16);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(251, 191, 36, 0.4);
 }
 
-.btn-upload-photo span {
-    white-space: nowrap;
+.profile-info-main {
+    min-width: 0;
 }
 
+.profile-name-main {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1;
+    font-weight: 900;
+    color: var(--text-main);
+    overflow-wrap: anywhere;
+}
+
+.profile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.2rem;
+}
+
+.profile-role-main,
+.profile-contact,
+.profile-member-since {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-main);
+    font-weight: 700;
+    font-size: 0.92rem;
+    overflow-wrap: anywhere;
+}
+
+.profile-role-main {
+    background: rgba(251, 191, 36, 0.16);
+    color: var(--primary);
+    border-color: rgba(251, 191, 36, 0.22);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.profile-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.stat-card-enhanced {
+    position: relative;
+    overflow: hidden;
+    min-height: 160px;
+    padding: 1.35rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03)),
+        var(--card-bg);
+    display: grid;
+    align-content: center;
+    gap: 0.45rem;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.stat-card-enhanced::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), rgba(14, 165, 233, 0.8));
+}
+
+.stat-card-enhanced:hover {
+    transform: translateY(-4px);
+    border-color: rgba(251, 191, 36, 0.28);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon-enhanced {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 0.35rem;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    background: rgba(251, 191, 36, 0.14);
+    font-size: 1.7rem;
+}
+
+.stat-value-enhanced {
+    font-size: clamp(2rem, 4vw, 2.9rem);
+    font-weight: 900;
+    color: var(--primary);
+    line-height: 1;
+}
+
+.stat-label-enhanced {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
 @media (max-width: 768px) {
-    .profile-header-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 1.5rem;
-    }
-    
-    .profile-info-main {
-        text-align: center;
-    }
-    
-    .profile-meta {
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .grid-cols-4 {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .stat-value-enhanced {
-        font-size: 2.5rem;
-    }
-    
-    .stat-icon-enhanced {
-        font-size: 2rem;
-    }
-    
-    .profile-actions-overlay {
-        position: static;
-        margin-top: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
+    .profile-container {
+        width: 100%;
+        padding: 0.75rem 0.65rem 1.25rem;
         gap: 1rem;
     }
-    
+
+    .profile-header-card {
+        width: 100%;
+        padding: 1.1rem;
+        border-radius: 22px;
+        margin-bottom: 0 !important;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22);
+    }
+
+    .profile-header-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 1rem;
+        justify-items: center;
+    }
+
+    .profile-avatar-medium {
+        width: 100%;
+        gap: 0.9rem;
+    }
+
+    .profile-avatar-img,
+    .profile-avatar-default {
+        width: 102px;
+        height: 102px;
+        font-size: 2.45rem;
+        border-width: 3px;
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.24), 0 0 0 6px rgba(251, 191, 36, 0.12);
+    }
+
+    .profile-info-main {
+        width: 100%;
+        text-align: center;
+    }
+
+    .profile-name-main {
+        font-size: clamp(1.65rem, 8vw, 2.15rem);
+        line-height: 1.08;
+    }
+
+    .profile-meta {
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 0.9rem;
+        width: 100%;
+    }
+
+    .profile-role-main,
+    .profile-contact,
+    .profile-member-since {
+        width: 100%;
+        justify-content: center;
+        min-height: 42px;
+        padding: 0.68rem 0.75rem;
+        border-radius: 16px;
+        font-size: 0.84rem;
+        line-height: 1.25;
+    }
+
+    .profile-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 0 !important;
+    }
+
+    .stat-card-enhanced {
+        min-height: 128px;
+        padding: 0.95rem 0.7rem;
+        border-radius: 18px;
+    }
+
+    .stat-card-enhanced:hover {
+        transform: none;
+    }
+
+    .stat-value-enhanced {
+        font-size: 1.95rem;
+    }
+
+    .stat-icon-enhanced {
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        font-size: 1.35rem;
+    }
+
+    .stat-label-enhanced {
+        font-size: 0.72rem;
+        line-height: 1.25;
+    }
+
+    .profile-actions-overlay {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.6rem;
+        align-items: stretch;
+    }
+
     .btn-edit-profile,
     .btn-upload-photo {
-        padding: 0.6rem 1rem;
-        font-size: 0.85rem;
+        min-width: 0;
+        min-height: 46px;
+        padding: 0.75rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.78rem;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 430px) {
+    .profile-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-actions-overlay {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card-enhanced {
+        min-height: 118px;
     }
 }
 </style>
@@ -386,3 +485,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
+
+
