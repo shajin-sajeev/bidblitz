@@ -10,6 +10,11 @@ class Team extends Model
         'auction_id', 'name', 'logo', 'team_pass', 'owner_id', 'owner_player_id'
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function auction() {
         return $this->belongsTo(Auction::class);
     }

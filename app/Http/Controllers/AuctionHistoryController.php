@@ -64,9 +64,17 @@ class AuctionHistoryController extends Controller
             abort(403, 'Unauthorized action.');
         }
         
-        $auction->load(['creator', 'teams.owner', 'participants.user', 'statistics', 'history' => function($query) {
-            $query->with(['player', 'team', 'bidder'])->orderBy('action_at', 'desc');
-        }]);
+        $auction->load([
+            'creator', 
+            'teams.owner', 
+            'teams.players.player',
+            'participants.user', 
+            'statistics', 
+            'history' => function($query) {
+                $query->with(['player', 'team', 'bidder'])->orderBy('action_at', 'desc');
+            },
+            'auctionPlayers.player'
+        ]);
 
         $totalBids = $auction->history()->where('action', 'bid_placed')->count();
         $totalSold = $auction->history()->where('action', 'player_sold')->count();

@@ -53,7 +53,7 @@
                                 <div>
                                     <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem;">{{ $userTeam->name }}</div>
                                     <div style="color: var(--text-muted); font-size: 0.9rem;">
-                                        💰 Budget: ${{ number_format($userTeam->budget ?? $auction->budget, 2) }}
+                                        💰 <strong>Budget:</strong> ₹{{ number_format($auction->budget, 2) }}
                                     </div>
                                     <div style="color: var(--text-muted); font-size: 0.9rem;">
                                         👥 Players: {{ $userTeam->players->count() }}/{{ $auction->max_players }}
@@ -114,12 +114,7 @@
                     <a href="{{ route('auctions.show', $auction) }}" class="btn btn-primary">
                         📊 View Details
                     </a>
-                    @if($userTeam)
-                        <a href="{{ route('teams.show', $userTeam) }}" class="btn" style="background: rgba(255,255,255,0.1);">
-                            👥 Manage Team
-                        </a>
-                    @endif
-                    @if($auction->status === 'setup' && $auction->created_by !== auth()->id())
+                                        @if($auction->status === 'setup' && $auction->created_by !== auth()->id())
                         <button onclick="leaveAuction({{ $auction->id }})" class="btn" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
                             🚪 Leave Auction
                         </button>

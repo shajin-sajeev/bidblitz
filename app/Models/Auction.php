@@ -11,6 +11,14 @@ class Auction extends Model
         'total_teams', 'budget', 'min_amount', 'auction_pass', 'status', 'created_by', 'activated_at'
     ];
 
+    protected $casts = [
+        'budget' => 'decimal:2',
+        'min_amount' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'activated_at' => 'datetime',
+    ];
+
     public function creator() {
         return $this->belongsTo(User::class, 'created_by');
     }
