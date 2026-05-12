@@ -77,22 +77,22 @@
 
         <!-- Statistics Cards -->
         <div class="grid grid-cols-4 gap-4 mb-8 dashboard-tab-panel active" data-dashboard-panel="overview">
-            <div class="glass-card text-center">
+            <a href="{{ route('dashboard.created-auctions') }}" class="glass-card text-center dashboard-overview-card">
                 <div style="font-size: 2rem; font-weight: bold; color: var(--primary);">{{ \App\Models\Auction::where('created_by', auth()->id())->count() }}</div>
                 <div style="font-size: 0.85rem; color: var(--text-muted);">Created Auctions</div>
-            </div>
-            <div class="glass-card text-center">
+            </a>
+            <a href="{{ route('dashboard.my-teams') }}" class="glass-card text-center dashboard-overview-card">
                 <div style="font-size: 2rem; font-weight: bold; color: var(--accent);">{{ \App\Models\Team::where('owner_id', auth()->id())->count() }}</div>
                 <div style="font-size: 0.85rem; color: var(--text-muted);">My Teams</div>
-            </div>
-            <div class="glass-card text-center">
+            </a>
+            <a href="{{ route('dashboard.live-auctions') }}" class="glass-card text-center dashboard-overview-card">
                 <div style="font-size: 2rem; font-weight: bold; color: #10b981;">{{ \App\Models\Auction::where('status', 'live')->count() }}</div>
                 <div style="font-size: 0.85rem; color: var(--text-muted);">Live Auctions</div>
-            </div>
-            <div class="glass-card text-center">
+            </a>
+            <a href="{{ route('dashboard.completed-auctions') }}" class="glass-card text-center dashboard-overview-card">
                 <div style="font-size: 2rem; font-weight: bold; color: #ef4444;">{{ \App\Models\Auction::where('status', 'completed')->count() }}</div>
                 <div style="font-size: 0.85rem; color: var(--text-muted);">Completed</div>
-            </div>
+            </a>
         </div>
 
         <!-- All Auctions with Pagination -->
@@ -227,6 +227,19 @@
     background: rgba(251, 191, 36, 0.2);
     color: var(--primary);
     font-weight: 600;
+}
+
+.dashboard-overview-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-overview-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(251, 191, 36, 0.28);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
 }
 
 /* Ensure proper table scrolling on mobile */

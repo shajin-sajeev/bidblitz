@@ -31,6 +31,10 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware([\App\Http\Middleware\EnsureProfileComplete::class])->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'getAllAuctions'])->name('dashboard');
+        Route::get('/dashboard/created-auctions', [\App\Http\Controllers\DashboardController::class, 'createdAuctions'])->name('dashboard.created-auctions');
+        Route::get('/dashboard/my-teams', [\App\Http\Controllers\DashboardController::class, 'myTeams'])->name('dashboard.my-teams');
+        Route::get('/dashboard/live-auctions', [\App\Http\Controllers\DashboardController::class, 'liveAuctions'])->name('dashboard.live-auctions');
+        Route::get('/dashboard/completed-auctions', [\App\Http\Controllers\DashboardController::class, 'completedAuctions'])->name('dashboard.completed-auctions');
         
         // Dashboard Search Routes
         Route::get('/dashboard/auctions/search', [\App\Http\Controllers\DashboardController::class, 'searchAuctions'])->name('dashboard.auctions.search');

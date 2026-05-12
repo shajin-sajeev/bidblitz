@@ -34,7 +34,7 @@ class JoinedTeamsController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $team->load(['auction.creator', 'players', 'owner', 'auction.players']);
+        $team->load(['auction.creator', 'auction.teams', 'players.player', 'owner', 'auction.players']);
 
         $totalSpent = $team->players()->sum('sold_price') ?? 0;
         $remainingBudget = $team->auction->budget - $totalSpent;
