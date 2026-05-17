@@ -2,7 +2,7 @@
     @php
         $maxBasePrice = (int) $auction->max_players > 0 ? (float) $auction->budget / (int) $auction->max_players : 0;
     @endphp
-    <div class="flex items-start gap-4">
+    <div class="flex items-start gap-4 available-player-layout">
         <div class="player-avatar">
             @if($player->avatar)
                 <img src="{{ $player->avatar }}" alt="{{ $player->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
@@ -40,7 +40,7 @@
                     </button>
                 </div>
             @else
-                <form action="{{ route('auctions.pool.store', $auction) }}" method="POST" class="flex gap-2" onsubmit="event.preventDefault(); handleFormSubmit(this); return false;">
+                <form action="{{ route('auctions.pool.store', $auction) }}" method="POST" class="flex gap-2 pool-form" onsubmit="event.preventDefault(); handleFormSubmit(this); return false;">
                     @csrf
                     <input type="hidden" name="player_id" value="{{ $player->id }}">
                     <input type="number" name="base_price" class="price-input" placeholder="Base Price" required min="1" step="any" title="Maximum base price: Rs. {{ number_format($maxBasePrice, 2) }}">

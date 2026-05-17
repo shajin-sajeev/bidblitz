@@ -84,9 +84,9 @@ class AuctionHistoryController extends Controller
             ->paginate(config('pagination.per_page'), ['*'], 'history_page')
             ->withQueryString();
 
-        $totalBids = $auction->history()->where('action', 'bid_placed')->count();
-        $totalSold = $auction->history()->where('action', 'player_sold')->count();
-        $totalUnsold = $auction->history()->where('action', 'player_unsold')->count();
+        $totalBids = \App\Models\Bid::where('auction_id', $auction->id)->count();
+        $totalSold = $auction->auctionPlayers()->where('status', 'sold')->count();
+        $totalUnsold = $auction->auctionPlayers()->where('status', 'unsold')->count();
 
         return view('auctions.show', compact('auction', 'teams', 'history', 'totalBids', 'totalSold', 'totalUnsold'));
     }
@@ -115,20 +115,23 @@ class AuctionHistoryController extends Controller
             ->paginate(config('pagination.per_page'), ['*'], 'history_page')
             ->withQueryString();
 
-        // Calculate additional statistics
+        $bids = \App\Models\Bid::where('auction_id', $auction->id)->get();
+        $auctionPlayers = $auction->auctionPlayers()->get();
+
         $bidStats = [
-            'total_bids' => $allHistory->where('action', 'bid_placed')->count(),
-            'unique_bidders' => $allHistory->where('action', 'bid_placed')->pluck('bidder_id')->unique()->count(),
-            'average_bid_amount' => $allHistory->where('action', 'bid_placed')->avg('amount') ?? 0,
-            'highest_bid' => $allHistory->where('action', 'bid_placed')->max('amount') ?? 0,
-            'lowest_bid' => $allHistory->where('action', 'bid_placed')->min('amount') ?? 0,
+            'total_bids' => $bids->count(),
+            'unique_bidders' => $bids->pluck('team_id')->unique()->count(),
+            'average_bid_amount' => $bids->avg('amount') ?? 0,
+            'highest_bid' => $bids->max('amount') ?? 0,
+            'lowest_bid' => $bids->min('amount') ?? 0,
         ];
 
         $playerStats = [
-            'total_players' => $allHistory->where('action', 'player_added')->count(),
-            'sold_players' => $allHistory->where('action', 'player_sold')->count(),
-            'unsold_players' => $allHistory->where('action', 'player_unsold')->count(),
-            'average_player_price' => $allHistory->where('action', 'player_sold')->avg('amount') ?? 0,
+            'total_players' => $auctionPlayers->count(),
+            'sold_players' => $auctionPlayers->where('status', 'sold')->count(),
+            'unsold_players' => $auctionPlayers->where('status', 'unsold')->count(),
+            'average_player_price' => $auctionPlayers->where('status', 'sold')->avg('sold_price') ?? 0,
+            'pending_players' => $auctionPlayers->where('status', 'pending')->count(),
         ];
 
         return view('auctions.statistics', compact('auction', 'teams', 'stats', 'bidStats', 'playerStats', 'history'));

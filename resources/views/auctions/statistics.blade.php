@@ -53,38 +53,13 @@
                 </div>
                 <div style="text-align: center; padding: 1.5rem; border: var(--glass-border); border-radius: 12px; background: rgba(239, 68, 68, 0.05);">
                     <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💰</div>
-                    <div style="font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;">₹{{ number_format($auction->history->where('action', 'player_sold')->sum('amount'), 0) }}</div>
+                    <div style="font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;">₹{{ number_format($auction->auctionPlayers->where('status', 'sold')->sum('sold_price'), 0) }}</div>
                     <div style="font-size: 0.9rem; color: var(--text-muted);">Total Spent</div>
                 </div>
             </div>
         </div>
 
-        <!-- Bidding Statistics -->
-        <div class="glass-card mb-6">
-            <h2 style="margin-bottom: 1.5rem; color: var(--primary);">💰 Bidding Activity</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                <div style="text-align: center; padding: 1.5rem; border: var(--glass-border); border-radius: 12px; background: rgba(147, 51, 234, 0.05);">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📊</div>
-                    <div style="font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;">{{ $bidStats['total_bids'] ?? 0 }}</div>
-                    <div style="font-size: 0.9rem; color: var(--text-muted);">Total Bids</div>
-                </div>
-                <div style="text-align: center; padding: 1.5rem; border: var(--glass-border); border-radius: 12px; background: rgba(59, 130, 246, 0.05);">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👥</div>
-                    <div style="font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;">{{ $bidStats['unique_bidders'] ?? 0 }}</div>
-                    <div style="font-size: 0.9rem; color: var(--text-muted);">Active Bidders</div>
-                </div>
-                <div style="text-align: center; padding: 1.5rem; border: var(--glass-border); border-radius: 12px; background: rgba(16, 185, 129, 0.05);">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📈</div>
-                    <div style="font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;">₹{{ number_format($bidStats['average_bid_amount'] ?? 0, 2) }}</div>
-                    <div style="font-size: 0.9rem; color: var(--text-muted);">Average Bid</div>
-                </div>
-                <div style="text-align: center; padding: 1.5rem; border: var(--glass-border); border-radius: 12px; background: rgba(251, 191, 36, 0.05);">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⬆️</div>
-                    <div style="font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;">₹{{ number_format($bidStats['highest_bid'] ?? 0, 2) }}</div>
-                    <div style="font-size: 0.9rem; color: var(--text-muted);">Highest Bid</div>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Player Statistics -->
         <div class="glass-card mb-6">
@@ -100,25 +75,10 @@
                         </div>
                     @endif
                 </div>
-                <div style="text-align: center; padding: 1.5rem; border: var(--glass-border); border-radius: 12px; background: rgba(239, 68, 68, 0.05);">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">❌</div>
-                    <div style="font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;">{{ $playerStats['unsold_players'] ?? 0 }}</div>
-                    <div style="font-size: 0.9rem; color: var(--text-muted);">Unsold Players</div>
-                    @if($playerStats['unsold_players'] > 0)
-                        <div style="margin-top: 0.5rem; font-size: 0.8rem;">
-                            {{ round(($playerStats['unsold_players'] / ($playerStats['total_players'] ?? 1)) * 100, 1) }}% Unsold
-                        </div>
-                    @endif
-                </div>
                 <div style="text-align: center; padding: 1.5rem; border: var(--glass-border); border-radius: 12px; background: rgba(251, 191, 36, 0.05);">
                     <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💵</div>
                     <div style="font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;">₹{{ number_format($playerStats['average_player_price'] ?? 0, 2) }}</div>
                     <div style="font-size: 0.9rem; color: var(--text-muted);">Average Price</div>
-                </div>
-                <div style="text-align: center; padding: 1.5rem; border: var(--glass-border); border-radius: 12px; background: rgba(147, 51, 234, 0.05);">
-                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📊</div>
-                    <div style="font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem;">{{ ($playerStats['total_players'] ?? 0) - (($playerStats['sold_players'] ?? 0) + ($playerStats['unsold_players'] ?? 0)) }}</div>
-                    <div style="font-size: 0.9rem; color: var(--text-muted);">Pending Players</div>
                 </div>
             </div>
         </div>
