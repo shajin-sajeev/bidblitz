@@ -132,6 +132,15 @@
                 </div>
             </div>
         @endforelse
+
+        @if($joinedAuctions->hasPages())
+            <div class="pagination-wrapper">
+                <div class="pagination-info">
+                    Showing <span>{{ $joinedAuctions->firstItem() }}</span> to <span>{{ $joinedAuctions->lastItem() }}</span> of <span>{{ $joinedAuctions->total() }}</span> auctions
+                </div>
+                {{ $joinedAuctions->links() }}
+            </div>
+        @endif
     </div>
 </div>
 

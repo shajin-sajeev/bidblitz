@@ -16,7 +16,7 @@ class PlayerController extends Controller
         $players = Player::active()
             ->search($search)
             ->orderBy('name')
-            ->paginate(5);
+            ->paginate(config('pagination.per_page'));
 
         return response()->json([
             'players' => $players,
@@ -156,7 +156,7 @@ class PlayerController extends Controller
         }
         
         $players = $query->orderBy('name')
-            ->paginate(5, ['*'], 'page', $page);
+            ->paginate(config('pagination.per_page'), ['*'], 'page', $page);
 
         return response()->json([
             'success' => true,

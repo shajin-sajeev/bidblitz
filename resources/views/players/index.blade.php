@@ -170,6 +170,10 @@ function renderPlayers(players) {
 
 function renderPagination(pagination) {
     const container = document.getElementById('pagination');
+    if (window.renderAppPagination) {
+        container.innerHTML = window.renderAppPagination(pagination, 'changePage', 'players');
+        return;
+    }
     
     if (pagination.last_page <= 1) {
         container.innerHTML = '';

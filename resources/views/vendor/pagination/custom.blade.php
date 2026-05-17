@@ -25,9 +25,11 @@
 
             @php
                 $lastPage = $paginator->lastPage();
-                $firstPages = range(1, min(3, $lastPage));
-                $lastPages = $lastPage > 3 ? range(max(4, $lastPage - 2), $lastPage) : [];
-                $pages = array_values(array_unique(array_merge($firstPages, $lastPages)));
+                $currentPage = $paginator->currentPage();
+                $firstPages = range(1, min(2, $lastPage));
+                $middlePages = range(max(1, $currentPage - 1), min($lastPage, $currentPage + 1));
+                $lastPages = $lastPage > 2 ? range(max(1, $lastPage - 1), $lastPage) : [];
+                $pages = array_values(array_unique(array_merge($firstPages, $middlePages, $lastPages)));
                 sort($pages);
                 $previousPage = 0;
             @endphp

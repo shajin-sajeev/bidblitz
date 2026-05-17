@@ -16,7 +16,7 @@ class DashboardController extends Controller
     {
         $query = $request->get('q', '');
         $page = $request->get('page', 1);
-        $perPage = 10;
+        $perPage = config('pagination.per_page');
         
         $auctions = Auction::with(['creator'])
             ->where(function ($q) use ($query) {
@@ -76,7 +76,7 @@ class DashboardController extends Controller
     {
         $auctions = Auction::with(['creator'])
             ->orderBy('created_at', 'desc')
-            ->paginate(5);
+            ->paginate(config('pagination.per_page'));
             
         return view('dashboard', compact('auctions'));
     }
@@ -86,7 +86,7 @@ class DashboardController extends Controller
         $items = Auction::with(['creator', 'teams'])
             ->where('created_by', auth()->id())
             ->latest()
-            ->paginate(5);
+            ->paginate(config('pagination.per_page'));
 
         return view('dashboard.details', [
             'items' => $items,
@@ -102,7 +102,7 @@ class DashboardController extends Controller
         $items = Team::with(['auction', 'players.player'])
             ->where('owner_id', auth()->id())
             ->latest()
-            ->paginate(5);
+            ->paginate(config('pagination.per_page'));
 
         return view('dashboard.details', [
             'items' => $items,
@@ -118,7 +118,7 @@ class DashboardController extends Controller
         $items = Auction::with(['creator', 'teams'])
             ->where('status', 'live')
             ->latest()
-            ->paginate(5);
+            ->paginate(config('pagination.per_page'));
 
         return view('dashboard.details', [
             'items' => $items,
@@ -134,7 +134,7 @@ class DashboardController extends Controller
         $items = Auction::with(['creator', 'teams', 'history'])
             ->where('status', 'completed')
             ->latest()
-            ->paginate(5);
+            ->paginate(config('pagination.per_page'));
 
         return view('dashboard.details', [
             'items' => $items,

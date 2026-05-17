@@ -16,11 +16,12 @@ class AuctionHistoryController extends Controller
     public function index()
     {
         $currentUserId = auth()->id();
+        $perPage = config('pagination.per_page');
         
         $userAuctions = Auction::with(['creator', 'teams', 'statistics'])
             ->where('created_by', $currentUserId)
             ->orderBy('created_at', 'desc')
-            ->paginate(5, ['*'], 'created_page')
+            ->paginate($perPage, ['*'], 'created_page')
             ->withQueryString();
 
         $participatedAuctions = Auction::with(['creator', 'teams', 'statistics'])
@@ -29,7 +30,7 @@ class AuctionHistoryController extends Controller
             })
             ->where('created_by', '!=', $currentUserId)
             ->orderBy('created_at', 'desc')
-            ->paginate(5, ['*'], 'participated_page')
+            ->paginate($perPage, ['*'], 'participated_page')
             ->withQueryString();
 
         return view('auctions.history', compact('userAuctions', 'participatedAuctions'));
@@ -44,8 +45,9 @@ class AuctionHistoryController extends Controller
                 $query->where('user_id', $currentUserId);
             })
             ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($auction) use ($currentUserId) {
+            ->paginate(config('pagination.per_page'))
+            ->withQueryString()
+            ->through(function ($auction) use ($currentUserId) {
                 // Add joined_at date from participant record
                 $participant = $auction->participants->where('user_id', $currentUserId)->first();
                 $auction->joined_at = $participant ? $participant->joined_at : null;
@@ -68,21 +70,25 @@ class AuctionHistoryController extends Controller
         
         $auction->load([
             'creator', 
-            'teams.owner', 
-            'teams.players.player',
             'participants.user', 
             'statistics', 
-            'history' => function($query) {
-                $query->with(['player', 'team', 'bidder'])->orderBy('action_at', 'desc');
-            },
             'auctionPlayers.player'
         ]);
+        $teams = $auction->teams()
+            ->with(['owner', 'players.player'])
+            ->paginate(config('pagination.per_page'), ['*'], 'teams_page')
+            ->withQueryString();
+        $history = $auction->history()
+            ->with(['player', 'team', 'bidder'])
+            ->orderBy('action_at', 'desc')
+            ->paginate(config('pagination.per_page'), ['*'], 'history_page')
+            ->withQueryString();
 
         $totalBids = $auction->history()->where('action', 'bid_placed')->count();
         $totalSold = $auction->history()->where('action', 'player_sold')->count();
         $totalUnsold = $auction->history()->where('action', 'player_unsold')->count();
 
-        return view('auctions.show', compact('auction', 'totalBids', 'totalSold', 'totalUnsold'));
+        return view('auctions.show', compact('auction', 'teams', 'history', 'totalBids', 'totalSold', 'totalUnsold'));
     }
 
     public function statistics(Auction $auction)
@@ -96,26 +102,36 @@ class AuctionHistoryController extends Controller
             abort(403, 'Unauthorized action.');
         }
         
+        $auction->load(['teams.owner', 'teams.players.player']);
+        $teams = $auction->teams()
+            ->with(['owner', 'players.player'])
+            ->paginate(config('pagination.per_page'), ['*'], 'teams_page')
+            ->withQueryString();
         $stats = $auction->statistics;
-        $history = $auction->history()->with(['player', 'team', 'bidder'])->get();
+        $allHistory = $auction->history()->with(['player', 'team', 'bidder'])->get();
+        $history = $auction->history()
+            ->with(['player', 'team', 'bidder'])
+            ->orderBy('action_at', 'desc')
+            ->paginate(config('pagination.per_page'), ['*'], 'history_page')
+            ->withQueryString();
 
         // Calculate additional statistics
         $bidStats = [
-            'total_bids' => $history->where('action', 'bid_placed')->count(),
-            'unique_bidders' => $history->where('action', 'bid_placed')->pluck('bidder_id')->unique()->count(),
-            'average_bid_amount' => $history->where('action', 'bid_placed')->avg('amount') ?? 0,
-            'highest_bid' => $history->where('action', 'bid_placed')->max('amount') ?? 0,
-            'lowest_bid' => $history->where('action', 'bid_placed')->min('amount') ?? 0,
+            'total_bids' => $allHistory->where('action', 'bid_placed')->count(),
+            'unique_bidders' => $allHistory->where('action', 'bid_placed')->pluck('bidder_id')->unique()->count(),
+            'average_bid_amount' => $allHistory->where('action', 'bid_placed')->avg('amount') ?? 0,
+            'highest_bid' => $allHistory->where('action', 'bid_placed')->max('amount') ?? 0,
+            'lowest_bid' => $allHistory->where('action', 'bid_placed')->min('amount') ?? 0,
         ];
 
         $playerStats = [
-            'total_players' => $history->where('action', 'player_added')->count(),
-            'sold_players' => $history->where('action', 'player_sold')->count(),
-            'unsold_players' => $history->where('action', 'player_unsold')->count(),
-            'average_player_price' => $history->where('action', 'player_sold')->avg('amount') ?? 0,
+            'total_players' => $allHistory->where('action', 'player_added')->count(),
+            'sold_players' => $allHistory->where('action', 'player_sold')->count(),
+            'unsold_players' => $allHistory->where('action', 'player_unsold')->count(),
+            'average_player_price' => $allHistory->where('action', 'player_sold')->avg('amount') ?? 0,
         ];
 
-        return view('auctions.statistics', compact('auction', 'stats', 'bidStats', 'playerStats', 'history'));
+        return view('auctions.statistics', compact('auction', 'teams', 'stats', 'bidStats', 'playerStats', 'history'));
     }
 
     public function leave(Auction $auction, Request $request)

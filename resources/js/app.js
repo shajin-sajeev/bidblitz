@@ -8,6 +8,70 @@
 
 import './echo';
 
+window.renderAppPagination = (pagination, changeHandler = 'changePage', itemLabel = 'records') => {
+    if (!pagination || pagination.last_page <= 1) {
+        return '';
+    }
+
+    const pageButton = (page, label = page, extraClass = '') => (
+        `<li class="page-item ${extraClass}"><button type="button" class="page-link" onclick="${changeHandler}(${page})"><span>${label}</span></button></li>`
+    );
+
+    let items = '';
+
+    if (pagination.current_page > 1) {
+        items += pageButton(pagination.current_page - 1, '&lsaquo;');
+    } else {
+        items += '<li class="page-item disabled" aria-disabled="true"><span class="page-link"><span>&lsaquo;</span></span></li>';
+    }
+
+    const boundedRange = (start, end) => {
+        const pages = [];
+        for (let page = Math.max(1, start); page <= Math.min(pagination.last_page, end); page += 1) {
+            pages.push(page);
+        }
+        return pages;
+    };
+
+    const pages = [...new Set([
+        ...boundedRange(1, 2),
+        ...boundedRange(pagination.current_page - 1, pagination.current_page + 1),
+        ...boundedRange(pagination.last_page - 1, pagination.last_page),
+    ])].sort((a, b) => a - b);
+
+    let previousPage = 0;
+    pages.forEach((page) => {
+        if (previousPage && page > previousPage + 1) {
+            items += '<li class="page-item disabled pagination-ellipsis" aria-disabled="true"><span class="page-link">...</span></li>';
+        }
+
+        if (page === pagination.current_page) {
+            items += `<li class="page-item active" aria-current="page"><span class="page-link"><span>${page}</span></span></li>`;
+        } else {
+            items += pageButton(page);
+        }
+
+        previousPage = page;
+    });
+
+    if (pagination.current_page < pagination.last_page) {
+        items += pageButton(pagination.current_page + 1, '&rsaquo;');
+    } else {
+        items += '<li class="page-item disabled" aria-disabled="true"><span class="page-link"><span>&rsaquo;</span></span></li>';
+    }
+
+    return `
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                Showing <span>${pagination.from}</span> to <span>${pagination.to}</span> of <span>${pagination.total}</span> ${itemLabel}
+            </div>
+            <nav role="navigation" aria-label="Pagination Navigation" class="pagination">
+                <ul class="pagination-items">${items}</ul>
+            </nav>
+        </div>
+    `;
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const menuButton = document.querySelector('.mobile-menu-toggle');
     const drawer = document.getElementById('mobile-app-drawer');

@@ -169,7 +169,7 @@
                     <div class="pagination-info">
                         Showing <span>{{ $auctions->firstItem() }}</span> to <span>{{ $auctions->lastItem() }}</span> of <span>{{ $auctions->total() }}</span> auctions
                     </div>
-                    {{ $auctions->links('pagination::custom') }}
+                    {{ $auctions->links() }}
                 </div>
             @endif
         </div>

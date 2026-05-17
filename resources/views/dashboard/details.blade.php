@@ -98,7 +98,7 @@
             <div class="pagination-info">
                 Showing <span>{{ $items->firstItem() }}</span> to <span>{{ $items->lastItem() }}</span> of <span>{{ $items->total() }}</span> records
             </div>
-            {{ $items->links('pagination::custom') }}
+            {{ $items->links() }}
         </div>
     @endif
 </div>

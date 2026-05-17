@@ -157,5 +157,6 @@
     <!-- Modal System -->
     @include('partials.modal')
 
+    @yield('scripts')
 </body>
 </html>

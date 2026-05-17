@@ -905,7 +905,7 @@ body.light-theme .pagination-items {
                 <div class="pagination-info">
                     Showing <span>{{ $players->firstItem() }}</span> to <span>{{ $players->lastItem() }}</span> of <span>{{ $players->total() }}</span> players
                 </div>
-                {{ $players->links('pagination::custom') }}
+                {{ $players->links() }}
             </div>
         </div>
     </div>
@@ -945,7 +945,7 @@ body.light-theme .pagination-items {
                     <div class="pagination-info">
                         Showing <span>{{ $pool->firstItem() }}</span> to <span>{{ $pool->lastItem() }}</span> of <span>{{ $pool->total() }}</span> players
                     </div>
-                    {{ $pool->links('pagination::custom') }}
+                    {{ $pool->links() }}
                 </div>
             @endif
         </div>

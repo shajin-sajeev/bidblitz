@@ -93,6 +93,15 @@
                     <a href="{{ route('auctions.join') }}" class="btn btn-primary" style="margin-top: 1rem;">🔗 Join Auction</a>
                 </div>
             @endforelse
+
+            @if($userTeams->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Showing <span>{{ $userTeams->firstItem() }}</span> to <span>{{ $userTeams->lastItem() }}</span> of <span>{{ $userTeams->total() }}</span> teams
+                    </div>
+                    {{ $userTeams->links() }}
+                </div>
+            @endif
         </div>
 
         <!-- Participated Auctions -->
@@ -117,6 +126,14 @@
                         </div>
                     </div>
                 @endforeach
+                @if($participatedAuctions->hasPages())
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+                            Showing <span>{{ $participatedAuctions->firstItem() }}</span> to <span>{{ $participatedAuctions->lastItem() }}</span> of <span>{{ $participatedAuctions->total() }}</span> auctions
+                        </div>
+                        {{ $participatedAuctions->links() }}
+                    </div>
+                @endif
             </div>
         @endif
     </div>

@@ -87,7 +87,7 @@
                     <div class="pagination-info">
                         Showing <span>{{ $userAuctions->firstItem() }}</span> to <span>{{ $userAuctions->lastItem() }}</span> of <span>{{ $userAuctions->total() }}</span> created auctions
                     </div>
-                    {{ $userAuctions->links('pagination::custom') }}
+                    {{ $userAuctions->links() }}
                 </div>
             @endif
         </div>
@@ -124,7 +124,7 @@
                         <div class="pagination-info">
                             Showing <span>{{ $participatedAuctions->firstItem() }}</span> to <span>{{ $participatedAuctions->lastItem() }}</span> of <span>{{ $participatedAuctions->total() }}</span> participated auctions
                         </div>
-                        {{ $participatedAuctions->links('pagination::custom') }}
+                        {{ $participatedAuctions->links() }}
                     </div>
                 @endif
             </div>

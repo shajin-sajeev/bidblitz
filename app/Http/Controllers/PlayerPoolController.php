@@ -30,11 +30,11 @@ class PlayerPoolController extends Controller
             ->with(['auctionPlayers' => function($query) use ($auction) {
                 $query->where('auction_id', $auction->id);
             }])
-            ->paginate(5);
+            ->paginate(config('pagination.per_page'));
 
         $pool = \App\Models\AuctionPlayer::where('auction_id', $auction->id)
             ->with('player')
-            ->paginate(5, ['*'], 'pool_page');
+            ->paginate(config('pagination.per_page'), ['*'], 'pool_page');
 
         $activeTab = $request->get('tab', 'available');
         $maxBasePrice = $this->maxBasePriceForAuction($auction);
@@ -246,7 +246,7 @@ class PlayerPoolController extends Controller
             ->with(['auctionPlayers' => function($query) use ($auction) {
                 $query->where('auction_id', $auction->id);
             }])
-            ->limit(10)
+            ->limit(config('pagination.per_page'))
             ->get();
 
         $html = '';

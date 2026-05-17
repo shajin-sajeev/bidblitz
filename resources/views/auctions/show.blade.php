@@ -45,7 +45,7 @@
                     @endif
                     @if($auction->status === 'live')
                         <a href="{{ route('auctions.live', $auction) }}" class="btn btn-accent">
-                            🔴 Enter Live Auction
+                            Enter Live Auction
                         </a>
                     @endif
                 </div>
@@ -166,7 +166,7 @@
         <div class="glass-card mb-4 joined-all-teams-card">
             <h2 style="margin-bottom: 1.5rem; color: var(--primary);"> All Teams</h2>
             <div class="joined-teams-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-                @foreach($auction->teams as $team)
+                @foreach($teams as $team)
                     <div class="joined-team-overview-card" style="border: var(--glass-border); padding: 1.5rem; border-radius: 12px; background: {{ $team->owner_id === auth()->id() ? 'rgba(251, 191, 36, 0.1)' : 'rgba(255,255,255,0.02)' }};">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                             <div>
@@ -219,14 +219,22 @@
                     </div>
                 @endforeach
             </div>
+            @if($teams->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Showing <span>{{ $teams->firstItem() }}</span> to <span>{{ $teams->lastItem() }}</span> of <span>{{ $teams->total() }}</span> teams
+                    </div>
+                    {{ $teams->links() }}
+                </div>
+            @endif
         </div>
 
         <!-- Recent Activity -->
-        @if($auction->history->count() > 0)
+        @if($history->count() > 0)
             <div class="glass-card mb-4 joined-activity-card">
                 <h2 style="margin-bottom: 1.5rem; color: var(--primary);"> Recent Activity</h2>
                 <div style="display: grid; gap: 1rem;">
-                    @foreach($auction->history->take(10) as $activity)
+                    @foreach($history as $activity)
                         <div class="joined-activity-row" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border-left: 4px solid {{ $activity->action === 'player_sold' ? '#10b981' : ($activity->action === 'player_unsold' ? '#ef4444' : '#3b82f6') }};">
                             <div>
                                 <div style="font-weight: 600; margin-bottom: 0.25rem;">
@@ -253,11 +261,12 @@
                         </div>
                     @endforeach
                 </div>
-                @if($auction->history->count() > 10)
-                    <div style="text-align: center; margin-top: 1.5rem;">
-                        <a href="{{ route('auctions.statistics', $auction) }}" class="btn" style="background: rgba(255,255,255,0.1);">
-                            📊 View Full Statistics
-                        </a>
+                @if($history->hasPages())
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+                            Showing <span>{{ $history->firstItem() }}</span> to <span>{{ $history->lastItem() }}</span> of <span>{{ $history->total() }}</span> activities
+                        </div>
+                        {{ $history->links() }}
                     </div>
                 @endif
             </div>

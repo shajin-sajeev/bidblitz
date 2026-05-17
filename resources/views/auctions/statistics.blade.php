@@ -127,7 +127,7 @@
         <div class="glass-card mb-6">
             <h2 style="margin-bottom: 1.5rem; color: var(--primary);">🏆 Team Performance</h2>
             <div style="display: grid; gap: 1.5rem;">
-                @foreach($auction->teams as $team)
+                @foreach($teams as $team)
                     <div style="border: var(--glass-border); padding: 1.5rem; border-radius: 12px; background: {{ $team->owner_id === auth()->id() ? 'rgba(251, 191, 36, 0.1)' : 'rgba(255,255,255,0.02)' }};">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                             <div>
@@ -190,6 +190,14 @@
                     </div>
                 @endforeach
             </div>
+            @if($teams->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Showing <span>{{ $teams->firstItem() }}</span> to <span>{{ $teams->lastItem() }}</span> of <span>{{ $teams->total() }}</span> teams
+                    </div>
+                    {{ $teams->links() }}
+                </div>
+            @endif
         </div>
 
         <!-- Recent Activity Timeline -->
@@ -197,7 +205,7 @@
             <div class="glass-card mb-6">
                 <h2 style="margin-bottom: 1.5rem; color: var(--primary);">📜 Activity Timeline</h2>
                 <div style="display: grid; gap: 1rem;">
-                    @foreach($history->take(20) as $activity)
+                    @foreach($history as $activity)
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,255,255,0.02); border-radius: 8px; border-left: 4px solid {{ $activity->action === 'player_sold' ? '#10b981' : ($activity->action === 'player_unsold' ? '#ef4444' : ($activity->action === 'bid_placed' ? '#3b82f6' : '#8b5cf6')) }};">
                             <div>
                                 <div style="font-weight: 600; margin-bottom: 0.25rem;">
@@ -229,11 +237,12 @@
                         </div>
                     @endforeach
                 </div>
-                @if($history->count() > 20)
-                    <div style="text-align: center; margin-top: 1.5rem;">
-                        <div style="color: var(--text-muted); font-size: 0.9rem;">
-                            Showing 20 of {{ $history->count() }} activities
+                @if($history->hasPages())
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+                            Showing <span>{{ $history->firstItem() }}</span> to <span>{{ $history->lastItem() }}</span> of <span>{{ $history->total() }}</span> activities
                         </div>
+                        {{ $history->links() }}
                     </div>
                 @endif
             </div>

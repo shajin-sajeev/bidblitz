@@ -36,9 +36,9 @@
             <span>{{ $playersCount }} total</span>
         </div>
 
-        @if($team->players->count() > 0)
+        @if($players->count() > 0)
             <div class="team-roster-list">
-                @foreach($team->players as $auctionPlayer)
+                @foreach($players as $auctionPlayer)
                     @php
                         $player = $auctionPlayer->player;
                         $price = $auctionPlayer->sold_price ?? $auctionPlayer->base_price ?? 0;
@@ -56,6 +56,14 @@
                     </article>
                 @endforeach
             </div>
+            @if($players->hasPages())
+                <div class="pagination-wrapper">
+                    <div class="pagination-info">
+                        Showing <span>{{ $players->firstItem() }}</span> to <span>{{ $players->lastItem() }}</span> of <span>{{ $players->total() }}</span> players
+                    </div>
+                    {{ $players->links() }}
+                </div>
+            @endif
         @else
             <div class="team-empty-state">
                 <h3>No Players Yet</h3>
